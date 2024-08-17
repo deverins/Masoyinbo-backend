@@ -4,7 +4,9 @@
   "description": "This project serves as the backend for a masoyinbo site.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "pamilerin",
@@ -23,5 +25,10 @@
     "nodemon": "^3.1.4",
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.4.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4"
   }
 }
