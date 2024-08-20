@@ -7,6 +7,7 @@ const EpisodeSchema: Schema = new Schema({
   totalQuestions: { type: Number, required: true },
   totalCorrectAnswers: { type: Number, required: true },
   totalAmountWon: { type: Number, required: true },
+  admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
 export const EpisodeModel = mongoose.model('Episode', EpisodeSchema);

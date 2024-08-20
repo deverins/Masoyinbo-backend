@@ -12,6 +12,7 @@ const UserSchema: Schema = new Schema({
   socialMediaPlatform: { type: String, required: true },
   socialMediaHandle: { type: String, required: true },
   howDidYouFindOut: { type: [String], required: true },
+  managedEpisodes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }]
 });
 
 export const UserModel = mongoose.model("User", UserSchema);
