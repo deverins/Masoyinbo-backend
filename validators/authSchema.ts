@@ -17,12 +17,12 @@ export const signupPayloadValidator: Joi.ObjectSchema = Joi.object({
 
 /** The payload object for verify OTP */
 export const verifyOTPPayLoad: Joi.ObjectSchema = Joi.object({
-    OTP: Joi.string().required(),
+    otp: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
 });
 
 /** The payload object for resend OTP */
 export const resendOTPPayLoad: Joi.ObjectSchema = Joi.object({
-    OTP: Joi.string().required(),
+    otp: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
 });
 
 /**

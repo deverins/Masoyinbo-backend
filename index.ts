@@ -20,16 +20,21 @@ app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ message: "Welcome to Másòyìnbó Project" });
 });
 
-// Not found middleware
+/** Not found middleware */
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found on our server" });
 });
 
-// Routes
+/** Routes */
 app.use("/", Router);
 app.use("/v1", routers);
 
-// Error handling middleware
+/**
+ * Error handling middleware
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ */
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const message = err.message || "An unexpected error occurred";
   const stack = process.env.NODE_ENV === "development" ? err.stack : undefined;
