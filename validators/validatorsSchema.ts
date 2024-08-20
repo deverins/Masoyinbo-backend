@@ -21,7 +21,7 @@ export const participantsloadValidator: Joi.ObjectSchema = Joi.object({
     source: Joi.array().items(Joi.string()).required(),
     comment: Joi.array().items(Joi.string()).required(),
     status: Joi.string().valid('Pending', 'Scheduled', 'Completed').default('Pending'),
-  });
+});
 
 /**
  * Schema validation handler

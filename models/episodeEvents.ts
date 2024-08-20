@@ -52,4 +52,4 @@ const EpisodeEventsSchema: Schema = new Schema({
   },
 });
 
-export const EpisodeEventsModel = mongoose.model("EpisodeEvents",EpisodeEventsSchema);
+export const EpisodeEventsModel = mongoose.model("EpisodeEvents", EpisodeEventsSchema);
