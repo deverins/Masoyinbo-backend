@@ -2,12 +2,14 @@ import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import connectDB from "./db/dbConnection";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8081;
 
+connectDB();
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
