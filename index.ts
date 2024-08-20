@@ -1,8 +1,9 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./db/dbConnection";
+import { routers } from "./routes/allRoutes";
 
 dotenv.config();
 
@@ -23,6 +24,10 @@ app.get("/", (req: Request, res: Response) => {
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found on our server" });
 });
+
+// Routes
+app.use("/", Router);
+app.use("/v1", routers);
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
