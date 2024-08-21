@@ -1,8 +1,8 @@
 export const questionValidator = {
   validator: function (value: any) {
-    return typeof value === 'string' || typeof value === 'number';
+    return Array.isArray(value) && value.every((item) => typeof item === 'string' || typeof item === 'number');
   },
-  message: 'Question must be a string or number',
+  message: 'Each question must be a string or number',
 };
 
 export const answerValidator = {
@@ -16,14 +16,21 @@ export const responseValidator = {
   validator: function (value: any) {
     return typeof value === 'string' || typeof value === 'number' || value === 'codemix';
   },
-  message: 'Response must be a question number, string, or "codemix"',
+  message: 'Response must be a string, number, or "codemix"',
 };
 
 export const passValidator = {
-  validator: function (value: any) {
-    return typeof value === 'string' || typeof value === 'number';
+  validator: function (value: boolean) {
+    return typeof value === 'boolean';
   },
-  message: 'Pass must be a string or number',
+  message: 'isCorrect must be a boolean value',
+};
+
+export const codeMixValidator = {
+  validator: function (value: boolean) {
+    return typeof value === 'boolean';
+  },
+  message: 'CodeMix must be a boolean value',
 };
 
 export const amountValidator = {
