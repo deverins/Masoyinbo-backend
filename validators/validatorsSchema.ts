@@ -15,11 +15,11 @@ export const participantsloadValidator: Joi.ObjectSchema = Joi.object({
     mobileNumber: Joi.string().required(),
     gender: Joi.string().valid('Male', 'Female', 'Other').required(),
     state: Joi.string().required(),
-    placeOfResidence: Joi.string().required(),
+    placeOfResidence: Joi.string().required(),  
     platformLink: Joi.string().required(),
     socialMediaHandle: Joi.string().required(),
     source: Joi.array().items(Joi.string()).required(),
-    comment: Joi.array().items(Joi.string()).required(),
+    comment: Joi.string(),
     status: Joi.string().valid('Pending', 'Scheduled', 'Completed').default('Pending'),
 });
 

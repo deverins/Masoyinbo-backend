@@ -1,7 +1,8 @@
+// routes/allRoutes.ts
 import express from "express";
-import { authRoutes } from "./auth";
 import { apiRoutes } from "./api";
+import authRoutes from "./auth";
 export const routers = express.Router();
 
-routers.use("/auth", authRoutes)
-routers.use("/auth", apiRoutes)
+routers.use("/auth", authRoutes);
+routers.use("/api", apiRoutes)

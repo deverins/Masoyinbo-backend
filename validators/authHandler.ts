@@ -15,7 +15,7 @@ export const SchemaMapper = (path: string): Joi.ObjectSchema | undefined => {
   switch (path) {
     case "/signup":
       return signupPayloadValidator;
-    case "/participant":
+    case "/create-participant":
       return participantsloadValidator;
   }
 };

@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction, Router } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -20,14 +20,13 @@ app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ message: "Welcome to Másòyìnbó Project" });
 });
 
+// Routes
+app.use("/v1", routers);
+
 /** Not found middleware */
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found on our server" });
 });
-
-/** Routes */
-app.use("/", Router);
-app.use("/v1", routers);
 
 /**
  * Error handling middleware
