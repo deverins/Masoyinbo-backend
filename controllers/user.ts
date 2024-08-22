@@ -25,7 +25,7 @@ export const createUser = async (req: Request, res: Response) => {
     await newUser.save();
 
     const _newUser = excludeFields(newUser.toObject(), ['password', '__v']);
-    return res.status(201).json({ message: "Registration successful", status: true, user: _newUser });
+    return res.status(201).json({ message: 'Registration successful', status: true, user: _newUser });
   } catch (error) {
     return res.status(500).json({ message: 'Error creating user', error });
   }
@@ -41,7 +41,7 @@ export const authenticateUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    /** Find the user by username */
+    /** Find the user by email */
     const user = await findUser({ email });
     if (!user || !user.password) {
       return res.status(400).json({ message: 'Invalid credentials' });
@@ -54,7 +54,7 @@ export const authenticateUser = async (req: Request, res: Response) => {
     }
 
     const _user = excludeFields(user.toObject(), ['password', '__v']);
-    return res.status(200).json({ message: "Login successful", status: true, user: _user });
+    return res.status(200).json({ message: 'Login successful', status: true, user: _user });
   } catch (error) {
     return res.status(500).json({ message: 'Error authenticating user', error });
   }
@@ -67,18 +67,18 @@ export const authenticateUser = async (req: Request, res: Response) => {
  * @param {Response} res - Express response object
  * @returns {void}
  */
-export const getUserByUsername = async (req: Request, res: Response) => {
+export const getUserByEmail = async (req: Request, res: Response) => {
   try {
-    const { username } = req.params;
+    const { email } = req.query;
 
-    // Find the user by username
-    const user = await findUser({ username });
+    // Find the user by email
+    const user = await findUser({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const responseUser = excludeFields(user.toObject(), ['password', '__v']);
-    return res.status(200).json(responseUser);
+    const _user = excludeFields(user.toObject(), ['password', '__v']);
+    return res.status(200).json({ message: 'retrieve user successfully', user: _user, status: true });
   } catch (error) {
     return res.status(500).json({ message: 'Error retrieving user', error });
   }
