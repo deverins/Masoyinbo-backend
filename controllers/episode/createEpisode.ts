@@ -13,7 +13,7 @@ export async function createEpisode(req: Request, res: Response, next: NextFunct
       return res.status(404).json({ message: 'Participant not found' });
     }
 
-    if (participant.status !== 'Completed') {
+    if (participant.status !== 'Pending') {
       return res.status(400).json({ message: 'Participant must have a status of Completed to be assigned an episode' });
     }
 

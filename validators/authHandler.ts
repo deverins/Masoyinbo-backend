@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
 import {
-  participantsloadValidator,
+  authenticateUserPayloadValidator,
+  participantsPayloadValidator,
   schemaValidatorHandler,
   signupPayloadValidator,
 } from "./validatorsSchema";
@@ -15,8 +16,10 @@ export const SchemaMapper = (path: string): Joi.ObjectSchema | undefined => {
   switch (path) {
     case "/signup":
       return signupPayloadValidator;
+      case "/login":
+        return authenticateUserPayloadValidator;
     case "/create-participant":
-      return participantsloadValidator;
+      return participantsPayloadValidator;
   }
 };
 

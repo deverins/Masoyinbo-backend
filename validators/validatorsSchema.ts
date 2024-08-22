@@ -7,15 +7,20 @@ export const signupPayloadValidator: Joi.ObjectSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,}$')).required(),
 });
+/** The validator payload for user authenticate */
+export const authenticateUserPayloadValidator: Joi.ObjectSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,}$')).required(),
+});
 
 /** The validator for the participants payload */
-export const participantsloadValidator: Joi.ObjectSchema = Joi.object({
+export const participantsPayloadValidator: Joi.ObjectSchema = Joi.object({
     fullName: Joi.string().min(3).max(40).required(),
     email: Joi.string().email().required(),
     mobileNumber: Joi.string().required(),
     gender: Joi.string().valid('Male', 'Female', 'Other').required(),
     state: Joi.string().required(),
-    placeOfResidence: Joi.string().required(),  
+    placeOfResidence: Joi.string().required(),
     platformLink: Joi.string().required(),
     socialMediaHandle: Joi.string().required(),
     source: Joi.array().items(Joi.string()).required(),
