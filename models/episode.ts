@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-type Episode = Document & {
+type episode = Document & {
   episodeLink: string;
   date: Date;
   noQuestionsGotten: number;
@@ -26,4 +26,4 @@ const EpisodeSchema: Schema = new Schema({
   totalCorrectAnswers: { type: Number, default: 0 },
 });
 
-export const EpisodeModel = mongoose.model<Episode>('Episode', EpisodeSchema);
+export const EpisodeModel = mongoose.model<episode>('Episode', EpisodeSchema);

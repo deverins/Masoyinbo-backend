@@ -1,6 +1,13 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 
+type userDetails = Document & {
+  fullName?: string;
+  username?: string;
+  email?: string;
+  password?: string;
+}
+
 const UserSchema: Schema = new Schema({
   fullName: { type: String, required: true },
   username: { type: String, required: true, unique: true },
@@ -18,4 +25,4 @@ UserSchema.pre("save", function (next) {
   });
 });
 
-export const UserModel = mongoose.model('User', UserSchema);
+export const UserModel = mongoose.model<userDetails>('User', UserSchema);

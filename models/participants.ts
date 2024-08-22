@@ -1,5 +1,19 @@
 import mongoose, { Schema } from 'mongoose';
 
+type participants = Document & {
+  fullName?: string;
+  email?: string;
+  mobileNumber: string;
+  gender: string;
+  state: string;
+  placeOfResidence: string;
+  platformLink: string;
+  socialMediaHandle: string;
+  source: string;
+  comment: string;
+  status: string;
+}
+
 const ParticipantsSchema: Schema = new Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -14,4 +28,4 @@ const ParticipantsSchema: Schema = new Schema({
   status: { type: String, default: 'Pending', enum: ['Pending', 'Scheduled', 'Completed'] },
 });
 
-export const Participants = mongoose.model('Participants', ParticipantsSchema);
+export const Participants = mongoose.model<participants>('Participants', ParticipantsSchema);
