@@ -20,7 +20,7 @@ app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ message: "Welcome to Másòyìnbó Project" });
 });
 
-// Routes
+/** Routes */
 app.use("/v1", routers);
 
 /** Not found middleware */

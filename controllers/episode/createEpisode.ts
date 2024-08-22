@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { EpisodeModel } from '../../models/episode';
 import { Participants } from '../../models/participants';
 
+/** Create a new episode */
 export async function createEpisode(req: Request, res: Response, next: NextFunction) {
   try {
     const { episodeLink, participant_id, createdBy, amountWon } = req.body;
@@ -16,7 +17,7 @@ export async function createEpisode(req: Request, res: Response, next: NextFunct
       return res.status(400).json({ message: 'Participant must have a status of Completed to be assigned an episode' });
     }
 
-    // Create a new Episode
+    /** Create a new episode instance and save to database */
     const newEpisode = new EpisodeModel({
       episodeLink,
       participant_id,

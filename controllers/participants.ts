@@ -24,7 +24,7 @@ export const createParticipant = async (req: Request, res: Response) => {
   }
 };
 
-// Get all participants
+/** Get all participants */
 export const getParticipants = async (req: Request, res: Response) => {
   try {
        await Participants.find();
