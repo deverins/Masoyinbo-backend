@@ -15,8 +15,6 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-
-/** Register errorRoute before the 404 middleware */
 app.use(errorRoute); 
 
 app.get("/", (req: Request, res: Response) => {
