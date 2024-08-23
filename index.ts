@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./db/dbConnection";
-import { routers } from "./routes/allRoutes";
+import { errorRoute, routers } from "./routes/allRoutes";
 
 dotenv.config();
 
@@ -15,6 +15,9 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+/** Register errorRoute before the 404 middleware */
+app.use(errorRoute); 
 
 app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ message: "Welcome to Másòyìnbó Project" });
@@ -40,6 +43,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ message, stack });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+/** Export app for testing */
+export default app;
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}

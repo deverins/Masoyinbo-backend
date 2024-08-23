@@ -43,6 +43,6 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.ts"]
+    "testMatch": ["**/?(*.)+(spec|test).ts"]
   }
 }

@@ -11,7 +11,7 @@
   },
   "include": [
     "**/*.ts"
-  ], // Include all .ts files in the root directory
+, "tests/ts"  ], // Include all .ts files in the root directory
   "exclude": [
     "node_modules",
     "dist"
