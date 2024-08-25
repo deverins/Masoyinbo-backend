@@ -1,42 +1,43 @@
-// test/index.test.ts
 import request from 'supertest';
 import app from '../index';
 import mongoose from 'mongoose';
-import { UserModel } from '../models/user';
+import connectTestDB from '../db/dbConnectionTest';
 
 
-
-describe('Root Route', () => {
-  beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI_TEST || '', {});
-  });
-
-  afterAll(async () => {
-    await mongoose.connection.close();
-  });
-
-  afterEach(async () => {
-    await UserModel.deleteMany({});
-  });
-
-  it('should return a welcome message', async () => {
-    const response = await request(app).get('/');
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe('Welcome to Másòyìnbó Project');
-  });
+beforeAll(async () => {
+  await connectTestDB();
 });
 
-describe('Error Handling', () => {
-  it('should handle a 404 error', async () => {
-    const response = await request(app).get('/non-existent-route');
-    expect(response.status).toBe(404);
-    expect(response.body.message).toBe('Route not found on our server');
+afterAll(async () => {
+  await mongoose.connection.close();
+});
+describe("Express Application Tests", () => {
+
+  it("should return a welcome message from the root route", async () => {
+    const response = await request(app).get("/");
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("Welcome to Másòyìnbó Project");
   });
 
-  it('should handle a generic error', async () => {
-    // Simulate an error by throwing an exception in a route handler
-    const response = await request(app).get('/error');
+  it("should return a 404 status for an unknown route", async () => {
+    const response = await request(app).get("/unknown-route");
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("Route not found on our server");
+  });
+
+  it("should return a 500 status for an internal server error", async () => {
+    // Create a route to simulate an error
+    app.get("/error", (req, res, next) => {
+      next(new Error("Test error"));
+    });
+
+    const response = await request(app).get("/error");
     expect(response.status).toBe(500);
-    expect(response.body.message).toBe('Test error');
+    expect(response.body.message).toBe("Test error");
+    if (process.env.NODE_ENV === "development") {
+      expect(response.body.stack).toBeDefined();
+    } else {
+      expect(response.body.stack).toBeUndefined();
+    }
   });
 });
