@@ -1,3 +1,4 @@
+// index.ts
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -5,7 +6,12 @@ import cookieParser from "cookie-parser";
 import connectDB from "./db/dbConnection";
 import { errorRoute, routers } from "./routes/allRoutes";
 
-dotenv.config();
+// Load environment variables based on the current environment
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({ path: '.env.test' });
+} else {
+  dotenv.config();
+}
 
 const app = express();
 const PORT = process.env.PORT || 8081;
