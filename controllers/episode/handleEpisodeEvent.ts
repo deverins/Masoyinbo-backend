@@ -57,6 +57,6 @@ export async function handleEpisodeEvent(req: Request, res: Response, next: Next
 
     return res.status(200).json({ message: 'Episode event handled successfully' });
   } catch (error) {
-    next(error);
+    return res.status(500).json({ message: 'Error handling episode event', error });
   }
 }

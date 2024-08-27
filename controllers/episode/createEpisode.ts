@@ -1,4 +1,3 @@
-// controllers/episode/createEpisode.ts
 import { Request, Response, NextFunction } from 'express';
 import { EpisodeModel } from '../../models/episode';
 import { Participants } from '../../models/participants';
@@ -36,6 +35,6 @@ export async function createEpisode(req: Request, res: Response, next: NextFunct
 
     return res.status(201).json({ message: 'Episode created successfully', episode: newEpisode });
   } catch (error) {
-    next(error);
+    return res.status(500).json({ message: 'Error creating episode', error });
   }
 }
