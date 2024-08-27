@@ -1,3 +1,4 @@
+// conrollers/participants.ts
 import { Request, Response } from 'express';
 import { Participants } from '../models/participants';
 
@@ -18,7 +19,7 @@ export const createParticipant = async (req: Request, res: Response) => {
     });
 
     const savedParticipant = await newParticipant.save();
-    res.status(201).json(savedParticipant);
+    return res.status(201).json({ message: "Participant created successfully", data: savedParticipant });
   } catch (error) {
     res.status(500).json({ message: 'Error creating participant', error });
   }
@@ -27,9 +28,9 @@ export const createParticipant = async (req: Request, res: Response) => {
 /** Get all participants */
 export const getParticipants = async (req: Request, res: Response) => {
   try {
-       await Participants.find();
-      res.status(200).json(Participants);
-  } catch (error) {
+      const participants = await Participants.find();
+      return res.status(200).json({ message: "Participants retrieved successfully", data: participants });
+    } catch (error) {
       res.status(500).json({ message: 'Error fetching participants', error });
   }
 };

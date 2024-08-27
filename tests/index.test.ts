@@ -1,12 +1,15 @@
 import request from 'supertest';
 import app from '../index';
 import connectTestDB from '../db/dbConnectionTest';
+import mongoose from 'mongoose';
 
 
 beforeAll(async () => {
   await connectTestDB();
 });
-
+afterAll(async () => {
+  await mongoose.connection.close();
+});
 describe("Express Application Tests", () => {
 
   it("should return a welcome message from the root route", async () => {
