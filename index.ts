@@ -5,23 +5,23 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./db/dbConnection";
 import { errorRoute, routers } from "./routes/allRoutes";
+import connectTestDB from "./db/dbConnectionTest";
 
-// Load environment variables based on the current environment
-if (process.env.NODE_ENV === 'test') {
-  dotenv.config({ path: '.env.test' });
-} else {
-  dotenv.config();
-}
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8082;
 
-connectDB();
+if (process.env.NODE_ENV === "test") {
+  connectTestDB();
+} else {
+  connectDB();
+}
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(errorRoute); 
+app.use(errorRoute);
 
 app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ message: "Welcome to Másòyìnbó Project" });

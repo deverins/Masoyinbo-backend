@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { UserModel } from '../models/user';
 import app from '../index';
+import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import connectTestDB from '../db/dbConnectionTest';
 
@@ -8,9 +9,12 @@ beforeAll(async () => {
   await connectTestDB()
 });
 
+afterAll(async () => {
+  await mongoose.connection.close();
+});
 
 beforeEach(async () => {
-  await UserModel.deleteOne({});
+  await UserModel.deleteMany({});
 });
 
 describe('createUser controller', () => {

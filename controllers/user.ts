@@ -23,13 +23,12 @@ export const createUser = async (req: Request, res: Response) => {
     /** Create a new user   
  instance and save to database */
     const newUser = new UserModel({ fullName, username, email, password });
-    const savedUser = await newUser.save();  // Use await to capture potential errors
-
-    if (savedUser) {  // Check if user was saved successfully
+    const savedUser = await newUser.save();
+    if (savedUser) {
       const _newUser = excludeFields(savedUser.toObject(), ['password', '__v']);
       return res.status(201).json({ message: 'Registration successful', status: true, user: _newUser });
     } else {
-      throw new Error('Error creating user');  // Throw an error if saving fails
+      throw new Error('Error creating user');
     }
 
   } catch (error) {
