@@ -1,4 +1,3 @@
-// conrollers/participants.ts
 import { Request, Response } from 'express';
 import { Participants } from '../models/participants';
 

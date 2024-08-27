@@ -1,3 +1,4 @@
+// routes/api.ts
 import express from "express";
 import { getParticipants } from "../controllers/participants";
 import { handleEpisodeEvent } from "../controllers/episode/handleEpisodeEvent";
