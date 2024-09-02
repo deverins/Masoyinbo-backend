@@ -1,3 +1,4 @@
+// controllers/episode/handleEpisodeEvent.ts
 import { Request, Response, NextFunction } from 'express';
 import { EpisodeModel } from "../../models/episode";
 import { EpisodeEventsModel } from "../../models/episodeEvents";
@@ -58,5 +59,49 @@ export async function handleEpisodeEvent(req: Request, res: Response, next: Next
     return res.status(200).json({ message: 'Episode event handled successfully' });
   } catch (error) {
     return res.status(500).json({ message: 'Error handling episode event', error });
+  }
+}
+
+export async function getEpisodeStats(req: Request, res: Response, next: NextFunction) {
+  try {
+    // Fetch all episodes
+    const episodes = await EpisodeModel.find({}).select('episodeLink');
+
+    // Calculate total episodes
+    const totalEpisodes = episodes.length;
+
+    // Aggregate other statistics
+    const [totalAmountWonData, totalAskedQuestionsData, totalRightQuestionsData, requestPoolData] = await Promise.all([
+      EpisodeModel.aggregate([
+        { $group: { _id: null, totalAmountWon: { $sum: "$amountWon" } } }
+      ]),
+      EpisodeModel.aggregate([
+        { $group: { _id: null, totalQuestions: { $sum: "$totalQuestionAttempted" } } }
+      ]),
+      EpisodeModel.aggregate([
+        { $group: { _id: null, totalCorrectAnswers: { $sum: "$totalCorrectAnswers" } } }
+      ]),
+      EpisodeModel.aggregate([
+        { $group: { _id: null, totalPool: { $sum: "$initialBalance" } } }
+      ])
+    ]);
+
+    const totalAmountWon = totalAmountWonData[0]?.totalAmountWon || 0;
+    const totalAskedQuestions = totalAskedQuestionsData[0]?.totalQuestions || 0;
+    const totalRightQuestions = totalRightQuestionsData[0]?.totalCorrectAnswers || 0;
+    const requestPool = requestPoolData[0]?.totalPool || 0;
+
+    return res.status(200).json({
+      stats: {
+        totalEpisodes,
+        totalAmountWon,
+        totalAskedQuestions,
+        totalRightQuestions,
+        requestPool,
+        episodeLinks: episodes.map(episode => episode.episodeLink),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error retrieving episode statistics', error });
   }
 }

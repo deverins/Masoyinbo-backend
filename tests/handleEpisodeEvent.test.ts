@@ -1,3 +1,4 @@
+// tests/handleEpisodeEvent.test.ts
 import request from 'supertest';
 import mongoose from 'mongoose';
 import connectTestDB from '../db/dbConnectionTest';
@@ -117,3 +118,60 @@ describe('handleEpisodeEvent controller', () => {
   });
 });
 
+describe('getEpisodeStats controller', () => {
+  it('should return correct episode statistics with 200 status code', async () => {
+    // Create mock episodes in the database
+    const creatorId = new mongoose.Types.ObjectId();
+    const participantId = new mongoose.Types.ObjectId();
+
+    await EpisodeModel.create([
+      {
+        initialBalance: 1000000,
+        totalMoneyDeducted: 100000,
+        totalCorrectAnswers: 2,
+        totalQuestionAttempted: 2,
+        amountWon: 500000,
+        createdBy: creatorId,
+        participant_id: participantId,
+        noQuestionsMissed: 0,
+        noQuestionsGotten: 2,
+        episodeLink: 'http://example.com/episode-link',
+      },
+      {
+        initialBalance: 800000,
+        totalMoneyDeducted: 200000,
+        totalCorrectAnswers: 3,
+        totalQuestionAttempted: 4,
+        amountWon: 300000,
+        createdBy: creatorId,
+        participant_id: participantId,
+        noQuestionsMissed: 1,
+        noQuestionsGotten: 3,
+        episodeLink: 'http://example.com/episode-link',
+      },
+    ]);
+
+    const response = await request(app).get('/v1/api/episode-stats');
+
+    expect(response.status).toBe(200);
+    expect(response.body.stats.totalEpisodes).toBe(2);
+    expect(response.body.stats.totalAmountWon).toBe(800000);
+    expect(response.body.stats.totalAskedQuestions).toBe(6);
+    expect(response.body.stats.totalRightQuestions).toBe(5);
+    expect(response.body.stats.requestPool).toBe(1800000);
+  });
+
+  it('should return 500 status code if an error occurs', async () => {
+    // Simulate an error
+    jest.spyOn(EpisodeModel, 'countDocuments').mockImplementationOnce(() => {
+      throw new Error('Database error');
+    });
+
+    const response = await request(app).get('/v1/api/episode-stats');
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe('Error retrieving episode statistics');
+
+    jest.restoreAllMocks();
+  });
+});
