@@ -24,7 +24,7 @@ export const participantsPayloadValidator: Joi.ObjectSchema = Joi.object({
     platformLink: Joi.string().required(),
     socialMediaHandle: Joi.string().required(),
     source: Joi.array().items(Joi.string()).required(),
-    comment: Joi.string(),
+    comment: Joi.string().allow('').optional(),
     status: Joi.string().valid('Pending', 'Scheduled', 'Completed').default('Pending'),
 });
 
