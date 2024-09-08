@@ -1,4 +1,3 @@
-// models/episode.ts
 import mongoose, { Schema } from 'mongoose';
 type episode = Document & {
   episodeLink: string;

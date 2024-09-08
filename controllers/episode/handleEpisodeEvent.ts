@@ -1,7 +1,7 @@
-// controllers/episode/handleEpisodeEvent.ts
 import { Request, Response, NextFunction } from 'express';
 import { EpisodeModel } from "../../models/episode";
 import { EpisodeEventsModel } from "../../models/episodeEvents";
+import { Participants } from '../../models/participants';
 
 export async function handleEpisodeEvent(req: Request, res: Response, next: NextFunction) {
   try {
@@ -64,40 +64,50 @@ export async function handleEpisodeEvent(req: Request, res: Response, next: Next
 
 export async function getEpisodeStats(req: Request, res: Response, next: NextFunction) {
   try {
-    // Fetch all episodes
-    const episodes = await EpisodeModel.find({}).select('episodeLink');
-
+    // Fetch all episodes with their links
+    const episodes = await EpisodeModel.find({})
+      .sort({ date: -1 })
+      .select('episodeLink');
     // Calculate total episodes
     const totalEpisodes = episodes.length;
 
-    // Aggregate other statistics
-    const [totalAmountWonData, totalAskedQuestionsData, totalRightQuestionsData, requestPoolData] = await Promise.all([
+    // Aggregate total questions asked, correct answers, and total amount won
+    const [totalAskedQuestionsData, totalRightQuestionsData, totalAmountWonData] = await Promise.all([
+      EpisodeEventsModel.aggregate([
+        { $group: { _id: null, totalQuestions: { $sum: 1 }, questions: { $push: "$question" } } }
+      ]),
+      EpisodeEventsModel.aggregate([
+        { $match: { pass: true } },
+        { $group: { _id: null, totalCorrectAnswers: { $sum: 1 }, correctAnswers: { $push: "$answer" } } }
+      ]),
       EpisodeModel.aggregate([
         { $group: { _id: null, totalAmountWon: { $sum: "$amountWon" } } }
-      ]),
-      EpisodeModel.aggregate([
-        { $group: { _id: null, totalQuestions: { $sum: "$totalQuestionAttempted" } } }
-      ]),
-      EpisodeModel.aggregate([
-        { $group: { _id: null, totalCorrectAnswers: { $sum: "$totalCorrectAnswers" } } }
-      ]),
-      EpisodeModel.aggregate([
-        { $group: { _id: null, totalPool: { $sum: "$initialBalance" } } }
       ])
     ]);
 
-    const totalAmountWon = totalAmountWonData[0]?.totalAmountWon || 0;
     const totalAskedQuestions = totalAskedQuestionsData[0]?.totalQuestions || 0;
     const totalRightQuestions = totalRightQuestionsData[0]?.totalCorrectAnswers || 0;
-    const requestPool = requestPoolData[0]?.totalPool || 0;
+    const totalAmountWon = totalAmountWonData[0]?.totalAmountWon || 0;
+
+    // Fetch participants with 'Pending' status for the request pool
+    const pendingParticipants = await Participants.find().select('fullName email state gender status socialMediaHandle');
 
     return res.status(200).json({
       stats: {
         totalEpisodes,
+        totalAskedQuestions: {
+          count: totalAskedQuestions,
+          questions: totalAskedQuestionsData[0]?.questions || []
+        },
+        totalRightQuestions: {
+          count: totalRightQuestions,
+          correctAnswers: totalRightQuestionsData[0]?.correctAnswers || []
+        },
         totalAmountWon,
-        totalAskedQuestions,
-        totalRightQuestions,
-        requestPool,
+        requestPool: {
+          total: pendingParticipants.length,
+          participants: pendingParticipants
+        },
         episodeLinks: episodes.map(episode => episode.episodeLink),
       },
     });

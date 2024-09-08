@@ -12,7 +12,11 @@ export async function createEpisode(req: Request, res: Response, next: NextFunct
     if (!participant) {
       return res.status(404).json({ message: 'Participant not found' });
     }
-
+    // Check if an episode already exists for the given participant ID
+    const existingEpisode = await EpisodeModel.findOne({ participant_id });
+    if (existingEpisode) {
+      return res.status(400).json({ message: "Episode already exists for this participant" });
+    }
     if (participant.status !== 'Pending') {
       return res.status(400).json({ message: 'Participant must have a status of Completed to be assigned an episode' });
     }
