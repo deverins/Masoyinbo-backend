@@ -23,8 +23,8 @@ const ParticipantsSchema: Schema = new Schema({
   placeOfResidence: { type: String, required: true },
   platformLink: { type: String, required: true },
   socialMediaHandle: { type: String, required: true },
-  source: [{ type: String, required: true  }],
-  comment: { type: String},
+  source: [{ type: String, required: true }],
+  comment: { type: String },
   status: { type: String, default: 'Pending', enum: ['Pending', 'Scheduled', 'Completed'] },
 });
 

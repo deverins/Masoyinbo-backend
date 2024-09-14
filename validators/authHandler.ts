@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
 import {
   authenticateUserPayloadValidator,
+  episodeEventPayloadValidator,
   participantsPayloadValidator,
   schemaValidatorHandler,
   signupPayloadValidator,
@@ -16,12 +17,15 @@ export const SchemaMapper = (path: string): Joi.ObjectSchema | undefined => {
   switch (path) {
     case "/signup":
       return signupPayloadValidator;
-      case "/login":
-        return authenticateUserPayloadValidator;
+    case "/login":
+      return authenticateUserPayloadValidator;
     case "/create-participant":
       return participantsPayloadValidator;
+    case "/episode-events":
+      return episodeEventPayloadValidator;
   }
 };
+
 
 /**
  * Middleware for validating request data

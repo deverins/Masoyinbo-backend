@@ -28,6 +28,35 @@ export const participantsPayloadValidator: Joi.ObjectSchema = Joi.object({
     status: Joi.string().valid('Pending', 'Scheduled', 'Completed').default('Pending'),
 });
 
+/** The validator for the episodeEvent payload */
+export const episodeEventPayloadValidator = Joi.object({
+    question: Joi.string().when('type', {
+        is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
+    }),
+    correctAnswer: Joi.string().when('type', {
+        is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
+    }),
+    response: Joi.string().when('type', {
+        is: Joi.string().valid('CODE_MIX'),
+        then: Joi.string().min(1).required(), // Non-empty for CODE_MIX
+        otherwise: Joi.string().allow('') // Optional for QUESTION_NUMBER and QUESTION
+    }),
+
+    isCorrect: Joi.boolean().when('type', {
+        is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
+        otherwise: Joi.forbidden()
+    }),
+    type: Joi.string().valid('QUESTION_NUMBER', 'QUESTION', 'CODE_MIX').required(),
+    amount: Joi.number().required(),
+    balance: Joi.number().required(),
+    eventTime: Joi.date().iso().optional(),
+    episodeId: Joi.string().required()
+});
+
 /**
  * Schema validation handler
  * @param {Joi.ObjectSchema} validatorSchema - The Joi validation schema

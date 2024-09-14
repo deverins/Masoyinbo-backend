@@ -5,70 +5,56 @@ import { Participants } from '../../models/participants';
 
 export async function handleEpisodeEvent(req: Request, res: Response, next: NextFunction) {
   try {
-    const { episodeId, questions } = req.body;
+    const {
+      question,
+      correctAnswer,
+      response = "No response?",
+      type,
+      amount,
+      balance,
+      episodeId,
+      eventTime,
+    } = req.body;
 
-    const episode = await EpisodeModel.findById(episodeId).populate('participant_id').exec();
+    const normalizedResponse = response.trim() === "" ? "No response?" : response;
 
-    if (!episode || !episode.participant_id) {
-      return res.status(404).json({ message: 'Episode or Participant not found' });
+    const episode = await EpisodeModel.findById(episodeId).exec();
+    if (!episode) {
+      return res.status(404).json({ message: 'Episode not found' });
     }
 
-    /** Process each question */
-    for (const questionData of questions) {
-      const { question, response, correctAnswer } = questionData;
+    const isCorrect = (type === 'QUESTION_NUMBER' || type === 'QUESTION') &&
+      normalizedResponse !== "No response?" &&
+      correctAnswer &&
+      normalizedResponse.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
 
-      let isCorrect = response.toLowerCase() === correctAnswer.toLowerCase();
-      let isCodeMix = /[a-zA-Z]/.test(response) && !isCorrect;
-      let deduction = isCorrect ? 0 : 100000;
+    const episodeEvent = new EpisodeEventsModel({
+      question,
+      correctAnswer,
+      response: normalizedResponse,
+      ...(type === 'QUESTION_NUMBER' || type === 'QUESTION' ? { isCorrect } : {}),
+      type,
+      amount,
+      balance,
+      eventTime: eventTime ? new Date(eventTime) : new Date(),
+      episodeId,
+    });
 
-      /** Additional deduction for code mix */
-      if (isCodeMix) {
-        deduction += 50000;
-      }
+    await episodeEvent.save();
 
-      const newBalance = episode.initialBalance - deduction;
-
-      /** Create episode event */
-      const episodeEvent = new EpisodeEventsModel({
-        question,
-        answer: correctAnswer,
-        response,
-        pass: isCorrect,
-        codeMix: isCodeMix,
-        amount: deduction,
-        balance: newBalance,
-        episodeId,
-      });
-
-      await episodeEvent.save();
-
-      /** Update episode balance and deduction amount */
-      episode.initialBalance = newBalance;
-      episode.totalMoneyDeducted += deduction;
-
-      if (isCorrect) {
-        episode.noQuestionsGotten += 1;
-        episode.totalCorrectAnswers += 1;
-      } else {
-        episode.noQuestionsMissed += 1;
-      }
-    }
-
-    await episode.save();
-
-    return res.status(200).json({ message: 'Episode event handled successfully' });
-  } catch (error) {
-    return res.status(500).json({ message: 'Error handling episode event', error });
+    return res.status(200).json({ message: 'Episode event handled successfully', episodeEvent });
+  } catch (error: any) {
+    console.error('Error handling episode event:', error);
+    return res.status(500).json({ message: 'Error handling episode event', error: error.message });
   }
 }
 
 export async function getEpisodeStats(req: Request, res: Response, next: NextFunction) {
   try {
-    // Fetch all episodes with their links
     const episodes = await EpisodeModel.find({})
       .sort({ date: -1 })
       .select('episodeLink');
-    // Calculate total episodes
+
     const totalEpisodes = episodes.length;
 
     // Aggregate total questions asked, correct answers, and total amount won
@@ -77,8 +63,8 @@ export async function getEpisodeStats(req: Request, res: Response, next: NextFun
         { $group: { _id: null, totalQuestions: { $sum: 1 }, questions: { $push: "$question" } } }
       ]),
       EpisodeEventsModel.aggregate([
-        { $match: { pass: true } },
-        { $group: { _id: null, totalCorrectAnswers: { $sum: 1 }, correctAnswers: { $push: "$answer" } } }
+        { $match: { isCorrect: true } },
+        { $group: { _id: null, totalCorrectAnswers: { $sum: 1 }, correctAnswers: { $push: "$correctAnswer" } } }
       ]),
       EpisodeModel.aggregate([
         { $group: { _id: null, totalAmountWon: { $sum: "$amountWon" } } }
@@ -90,10 +76,11 @@ export async function getEpisodeStats(req: Request, res: Response, next: NextFun
     const totalAmountWon = totalAmountWonData[0]?.totalAmountWon || 0;
 
     // Fetch participants with 'Pending' status for the request pool
-    const pendingParticipants = await Participants.find().select('fullName email state gender status socialMediaHandle');
+    const pendingParticipants = await Participants.find({ status: 'Pending' }).select('fullName email state gender status socialMediaHandle');
 
     return res.status(200).json({
       stats: {
+        message: 'Successfully retrieved stats',
         totalEpisodes,
         totalAskedQuestions: {
           count: totalAskedQuestions,
@@ -111,7 +98,69 @@ export async function getEpisodeStats(req: Request, res: Response, next: NextFun
         episodeLinks: episodes.map(episode => episode.episodeLink),
       },
     });
-  } catch (error) {
-    return res.status(500).json({ message: 'Error retrieving episode statistics', error });
+  } catch (error: any) {
+    console.error('Error retrieving episode statistics:', error);
+    return res.status(500).json({ message: 'Error retrieving episode statistics', error: error.message });
+  }
+}
+
+export async function getEpisodeEventDetail(req: Request, res: Response, next: NextFunction) {
+  try {
+    const events = await EpisodeEventsModel.aggregate([
+      {
+        $lookup: {
+          from: 'episodes',
+          localField: 'episodeId',
+          foreignField: '_id',
+          as: 'episode'
+        }
+      },
+      {
+        $unwind: '$episode'
+      },
+      {
+        $lookup: {
+          from: 'participants',
+          localField: 'episode.participant_id',
+          foreignField: '_id',
+          as: 'participant'
+        }
+      },
+      {
+        $unwind: '$participant'
+      },
+      {
+        $match: {
+          'participant.status': 'Completed'
+        }
+      },
+      {
+        $project: {
+          question: 1,
+          correctAnswer: 1,
+          response: 1,
+          isCorrect: 1,
+          type: 1,
+          amount: 1,
+          balance: 1,
+          eventTime: 1,
+          participantFullName: '$participant.fullName'
+        }
+      }
+    ]);
+
+    if (events.length === 0) {
+      return res.status(404).json({ message: 'No events found with participants' });
+    }
+    const participantName = events[0]?.participantFullName;
+    const totalEvents = events.length;
+
+    const message = `Successfully retrieved ${totalEvents} event(s) for participant ${participantName}.`;
+
+    return res.status(200).json({ message, events });
+
+  } catch (error: any) {
+    console.error('Error retrieving episode details:', error);
+    return res.status(500).json({ message: 'Error retrieving episode details', error: error.message });
   }
 }

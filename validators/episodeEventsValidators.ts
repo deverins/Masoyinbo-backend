@@ -1,48 +1,62 @@
 export const questionValidator = {
-  validator: function (value: any) {
-    return Array.isArray(value) && value.every((item) => typeof item === 'string' || typeof item === 'number');
+  validator: function (this: any, value: string) {
+    if (this.type === "QUESTION_NUMBER" || this.type === "QUESTION") {
+      return typeof value === "string" && !!value;
+    }
+    return true;
   },
-  message: 'Each question must be a string or number',
+  message: 'Question is required when type is "QUESTION_NUMBER" or "QUESTION"',
 };
 
-export const answerValidator = {
-  validator: function (value: any) {
-    return typeof value === 'string' || typeof value === 'number';
+export const correctAnswerValidator = {
+  validator: function (this: any, value: string) {
+    if (this.type === "QUESTION_NUMBER" || this.type === "QUESTION") {
+      return typeof value === "string" && !!value;
+    }
+    return true;
   },
-  message: 'Answer must be a string or number',
+  message:
+    'Correct answer is required when type is "QUESTION_NUMBER" or "QUESTION"',
 };
 
 export const responseValidator = {
   validator: function (value: any) {
-    return typeof value === 'string' || typeof value === 'number' || value === 'codemix';
+    return value ? typeof value == "string" : true;
   },
-  message: 'Response must be a string, number, or "codemix"',
+  message: "Response could only be a string or null",
 };
 
-export const passValidator = {
-  validator: function (value: boolean) {
-    return typeof value === 'boolean';
+export const isCorrectValidator = {
+  validator: function (this: any, value: boolean) {
+    if (this.type === "QUESTION_NUMBER" || this.type === "QUESTION") {
+      return typeof value === "boolean";
+    }
+    return true;
   },
-  message: 'isCorrect must be a boolean value',
+  message:
+    'isCorrect must be a boolean type when type is "QUESTION_NUMBER" or "QUESTION"',
 };
 
-export const codeMixValidator = {
+export const typeValidator = {
   validator: function (value: boolean) {
-    return typeof value === 'boolean';
+    return (
+      typeof value === "string" &&
+      ["QUESTION_NUMBER", "QUESTION", "CODE_MIX"].includes(value)
+    );
   },
-  message: 'CodeMix must be a boolean value',
+  message: 'type must be one of ["QUESTION_NUMBER" , "QUESTION" , "CODE_MIX"]',
 };
 
 export const amountValidator = {
   validator: function (value: number) {
-    return value >= 0 && value <= 1000000;
+    return typeof value === "number";
   },
-  message: 'Amount must be between 0 and 1,000,000',
+  message: "Amount must be of type number",
 };
 
 export const balanceValidator = {
   validator: function (value: number) {
-    return value >= 0 && value <= 1000000;
+    return typeof value === "number";
   },
-  message: 'Balance must be between 0 and 1,000,000',
+  message: "Balance must be of type number",
 };

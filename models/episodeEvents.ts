@@ -1,21 +1,21 @@
 import mongoose, { Schema } from "mongoose";
 import {
   amountValidator,
-  answerValidator,
+  correctAnswerValidator,
   balanceValidator,
-  codeMixValidator,
-  passValidator,
+  typeValidator,
+  isCorrectValidator,
   questionValidator,
-  responseValidator,
+  responseValidator
 } from "../validators/episodeEventsValidators";
 
 
-type episodeEvents = Document & {
-  question: Schema.Types.Mixed;
-  answer: Schema.Types.Mixed;
-  response: Schema.Types.Mixed;
-  pass: boolean;
-  codeMix: boolean;
+export type episodeEvents = Document & {
+  question?: string;
+  correctAnswer?: string;
+  response?: string;
+  isCorrect: boolean;
+  type: "QUESTION_NUMBER" | "QUESTION" | "CODE_MIX";
   amount: number;
   balance: number;
   eventTime: Date;
@@ -23,11 +23,11 @@ type episodeEvents = Document & {
 }
 
 const EpisodeEventsSchema: Schema = new Schema({
-  question: [{ type: Schema.Types.Mixed, required: true, validate: questionValidator }],
-  answer: { type: Schema.Types.Mixed, required: true, validate: answerValidator, },
-  response: { type: Schema.Types.Mixed, required: true, validate: responseValidator, },
-  pass: { type: Boolean, required: true, validate: passValidator, },
-  codeMix: { type: Boolean, required: true, validate: codeMixValidator, },
+  question: [{ type: String, required: true, validate: questionValidator }],
+  correctAnswer: { type: String, validate: correctAnswerValidator, },
+  response: { type: String, default: "No response?", required: true, validate: responseValidator, },
+  isCorrect: { type: Boolean, validate: isCorrectValidator, },
+  type: { type: String, required: true, validate: typeValidator, },
   amount: { type: Number, required: true, validate: amountValidator, },
   balance: { type: Number, required: true, validate: balanceValidator, },
   eventTime: { type: Date, default: Date.now },
