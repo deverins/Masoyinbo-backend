@@ -5,47 +5,43 @@ import { Participants } from '../../models/participants';
 
 export async function handleEpisodeEvent(req: Request, res: Response, next: NextFunction) {
   try {
-    const {
-      question,
-      correctAnswer,
-      response = "No response?",
-      type,
-      amount,
-      balance,
-      episodeId,
-      eventTime,
-    } = req.body;
-
-    const normalizedResponse = response.trim() === "" ? "No response?" : response;
+    const { episodeId, events } = req.body;
 
     const episode = await EpisodeModel.findById(episodeId).exec();
     if (!episode) {
       return res.status(404).json({ message: 'Episode not found' });
     }
 
-    const isCorrect = (type === 'QUESTION_NUMBER' || type === 'QUESTION') &&
-      normalizedResponse !== "No response?" &&
-      correctAnswer &&
-      normalizedResponse.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    const savedEvents = [];
+    for (const event of events) {
+      const { question, correctAnswer, response = "No response?", type, amount, balance } = event;
 
-    const episodeEvent = new EpisodeEventsModel({
-      question,
-      correctAnswer,
-      response: normalizedResponse,
-      ...(type === 'QUESTION_NUMBER' || type === 'QUESTION' ? { isCorrect } : {}),
-      type,
-      amount,
-      balance,
-      eventTime: eventTime ? new Date(eventTime) : new Date(),
-      episodeId,
-    });
+      const normalizedResponse = response.trim() === "" ? "No response?" : response;
 
-    await episodeEvent.save();
+      const isCorrect = (type === 'QUESTION_NUMBER' || type === 'QUESTION') &&
+        normalizedResponse !== "No response?" &&
+        correctAnswer &&
+        normalizedResponse.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
 
-    return res.status(200).json({ message: 'Episode event handled successfully', episodeEvent });
+      const episodeEvent = new EpisodeEventsModel({
+        question,
+        correctAnswer,
+        response: normalizedResponse,
+        ...(type === 'QUESTION_NUMBER' || type === 'QUESTION' ? { isCorrect } : {}),
+        type,
+        amount,
+        balance,
+        episodeId,
+      });
+
+      await episodeEvent.save();
+      savedEvents.push(episodeEvent);
+    }
+
+    return res.status(200).json({ message: 'Episode events handled successfully', events: savedEvents });
   } catch (error: any) {
-    console.error('Error handling episode event:', error);
-    return res.status(500).json({ message: 'Error handling episode event', error: error.message });
+    console.error('Error handling episode events:', error);
+    return res.status(500).json({ message: 'Error handling episode events', error: error.message });
   }
 }
 
