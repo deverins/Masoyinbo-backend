@@ -1,4 +1,3 @@
-// models/episodeEvents
 import mongoose, { Schema } from "mongoose";
 import {
   amountValidator,
