@@ -139,7 +139,6 @@ export async function getEpisodeEventDetail(req: Request, res: Response, next: N
           type: 1,
           amount: 1,
           balance: 1,
-          eventTime: 1,
           participantFullName: '$participant.fullName'
         }
       }
