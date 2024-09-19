@@ -42,8 +42,8 @@ const eventSchema = Joi.object({
     }),
     response: Joi.string().when('type', {
         is: Joi.string().valid('CODE_MIX'),
-        then: Joi.string().min(1).required(), // Non-empty for CODE_MIX
-        otherwise: Joi.string().allow('') // Optional for QUESTION_NUMBER and QUESTION
+        then: Joi.string().min(1).required(),
+        otherwise: Joi.string().allow('')
     }),
     isCorrect: Joi.boolean().when('type', {
         is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
@@ -59,32 +59,6 @@ export const episodeEventPayloadValidator = Joi.object({
     episodeId: Joi.string().required(),
     events: Joi.array().items(eventSchema).required()
 });
-// export const episodeEventPayloadValidator = Joi.object({
-//     question: Joi.string().when('type', {
-//         is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
-//         then: Joi.required(),
-//         otherwise: Joi.forbidden()
-//     }),
-//     correctAnswer: Joi.string().when('type', {
-//         is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
-//         then: Joi.required(),
-//         otherwise: Joi.forbidden()
-//     }),
-//     response: Joi.string().when('type', {
-//         is: Joi.string().valid('CODE_MIX'),
-//         then: Joi.string().min(1).required(), // Non-empty for CODE_MIX
-//         otherwise: Joi.string().allow('') // Optional for QUESTION_NUMBER and QUESTION
-//     }),
-
-//     isCorrect: Joi.boolean().when('type', {
-//         is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
-//         otherwise: Joi.forbidden()
-//     }),
-//     type: Joi.string().valid('QUESTION_NUMBER', 'QUESTION', 'CODE_MIX').required(),
-//     amount: Joi.number().required(),
-//     balance: Joi.number().required(),
-//     episodeId: Joi.string().required()
-// });
 
 /**
  * Schema validation handler

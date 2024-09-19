@@ -9,7 +9,7 @@ export async function createEpisode(
   next: NextFunction
 ) {
   try {
-    const { episodeLink, participant_id, createdBy, amountWon, episodeDate } = req.body;
+    const { episodeLink, participant_id, createdBy, amountWon, availableAmounToWin, episodeDate } = req.body;
 
     const participant = await Participants.findById(participant_id).exec();
 
@@ -39,12 +39,12 @@ export async function createEpisode(
       episodeLink,
       participant_id,
       createdBy,
+      availableAmounToWin,
       noQuestionsGotten: 0,
       noQuestionsMissed: 0,
       totalQuestionAttempted: 0,
       date: episodeDate || Date.now(),
       amountWon,
-      initialBalance: 1000000,
       totalMoneyDeducted: 0,
       totalCorrectAnswers: 0,
     });

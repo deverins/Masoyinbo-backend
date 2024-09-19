@@ -18,7 +18,7 @@ export type episodeEvents = Document & {
   type: "QUESTION_NUMBER" | "QUESTION" | "CODE_MIX";
   amount: number;
   balance: number;
-  createdAt:  Date;
+  createdAt: Date;
   episodeId: mongoose.Schema.Types.ObjectId;
 }
 

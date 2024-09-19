@@ -3,6 +3,97 @@ import { EpisodeModel } from "../../models/episode";
 import { EpisodeEventsModel } from "../../models/episodeEvents";
 import { Participants } from '../../models/participants';
 
+import mongoose from 'mongoose';
+
+export async function getEpisodeEventDetail(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { episodeId } = req.query as { episodeId?: string };
+
+    if (!episodeId) {
+      return res.status(400).json({ message: 'episodeId is required' });
+    }
+
+    const episodeObjectId = new mongoose.Types.ObjectId(episodeId);
+
+    // Retrieve episode details including episodeLink, episodeDate, and availableAmounToWin
+    const episodeDetails = await EpisodeModel.findById(episodeObjectId).exec();
+
+    if (!episodeDetails) {
+      return res.status(404).json({ message: 'Episode not found' });
+    }
+
+    // Aggregate events
+    const events = await EpisodeEventsModel.aggregate([
+      {
+        $match: {
+          episodeId: episodeObjectId
+        }
+      },
+      {
+        $lookup: {
+          from: 'episodes',
+          localField: 'episodeId',
+          foreignField: '_id',
+          as: 'episode'
+        }
+      },
+      {
+        $unwind: '$episode'
+      },
+      {
+        $lookup: {
+          from: 'participants',
+          localField: 'episode.participant_id',
+          foreignField: '_id',
+          as: 'participant'
+        }
+      },
+      {
+        $unwind: '$participant'
+      },
+      {
+        $match: {
+          'participant.status': 'Completed'
+        }
+      },
+      {
+        $project: {
+          question: 1,
+          correctAnswer: 1,
+          response: 1,
+          isCorrect: 1,
+          type: 1,
+          amount: 1,
+          balance: 1,
+          participantFullName: '$participant.fullName',
+          episodeDate: '$episode.date'
+        }
+      }
+    ]);
+
+    if (events.length === 0) {
+      return res.status(404).json({ message: 'No events found with participants' });
+    }
+
+    const participantName = events[0]?.participantFullName;
+    const totalEvents = events.length;
+
+    const message = `Successfully retrieved ${totalEvents} event(s) for participant ${participantName}.`;
+
+    return res.status(200).json({
+      message,
+      events,
+      episodeLink: episodeDetails.episodeLink,
+      episodeDate: episodeDetails.date,
+      totalAmountAvailableToWin: episodeDetails.availableAmounToWin
+    });
+
+  } catch (error: any) {
+    console.error('Error retrieving episode details:', error);
+    return res.status(500).json({ message: 'Error retrieving episode details', error: error.message });
+  }
+}
+
 export async function handleEpisodeEvent(req: Request, res: Response, next: NextFunction) {
   try {
     const { episodeId, events } = req.body;
@@ -91,71 +182,14 @@ export async function getEpisodeStats(req: Request, res: Response, next: NextFun
           total: pendingParticipants.length,
           participants: pendingParticipants
         },
-        episodeLinks: episodes.map(episode => episode.episodeLink),
+        episodeLinks: episodes.map(episode => ({
+          episodeLink: episode.episodeLink,
+          id: episode._id
+        })),
       },
     });
   } catch (error: any) {
     console.error('Error retrieving episode statistics:', error);
     return res.status(500).json({ message: 'Error retrieving episode statistics', error: error.message });
-  }
-}
-
-export async function getEpisodeEventDetail(req: Request, res: Response, next: NextFunction) {
-  try {
-    const events = await EpisodeEventsModel.aggregate([
-      {
-        $lookup: {
-          from: 'episodes',
-          localField: 'episodeId',
-          foreignField: '_id',
-          as: 'episode'
-        }
-      },
-      {
-        $unwind: '$episode'
-      },
-      {
-        $lookup: {
-          from: 'participants',
-          localField: 'episode.participant_id',
-          foreignField: '_id',
-          as: 'participant'
-        }
-      },
-      {
-        $unwind: '$participant'
-      },
-      {
-        $match: {
-          'participant.status': 'Completed'
-        }
-      },
-      {
-        $project: {
-          question: 1,
-          correctAnswer: 1,
-          response: 1,
-          isCorrect: 1,
-          type: 1,
-          amount: 1,
-          balance: 1,
-          participantFullName: '$participant.fullName'
-        }
-      }
-    ]);
-
-    if (events.length === 0) {
-      return res.status(404).json({ message: 'No events found with participants' });
-    }
-    const participantName = events[0]?.participantFullName;
-    const totalEvents = events.length;
-
-    const message = `Successfully retrieved ${totalEvents} event(s) for participant ${participantName}.`;
-
-    return res.status(200).json({ message, events });
-
-  } catch (error: any) {
-    console.error('Error retrieving episode details:', error);
-    return res.status(500).json({ message: 'Error retrieving episode details', error: error.message });
   }
 }
