@@ -1,4 +1,3 @@
-// controller/episode/handleEpisodeEvent.ts
 import { Request, Response, NextFunction } from 'express';
 import { EpisodeModel } from "../../models/episode";
 import { EpisodeEventsModel } from "../../models/episodeEvents";
@@ -110,16 +109,23 @@ export async function handleEpisodeEvent(req: Request, res: Response, next: Next
 
       const normalizedResponse = response.trim() === "" ? "No response?" : response;
 
-      const isCorrect = (type === 'QUESTION_NUMBER' || type === 'QUESTION') &&
-        normalizedResponse !== "No response?" &&
-        correctAnswer &&
-        normalizedResponse.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+      let isCorrect = false;
+      if (type === 'QUESTION_NUMBER' || type === 'QUESTION') {
+        isCorrect = normalizedResponse !== "No response?" &&
+          correctAnswer &&
+          normalizedResponse.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+      }
+
+      // Set isCorrect to false for CODE_MIX type
+      if (type === 'CODE_MIX') {
+        isCorrect = false;
+      }
 
       const episodeEvent = new EpisodeEventsModel({
         question,
         correctAnswer,
         response: normalizedResponse,
-        ...(type === 'QUESTION_NUMBER' || type === 'QUESTION' ? { isCorrect } : {}),
+        ...(type === 'QUESTION_NUMBER' || type === 'QUESTION' || type === 'CODE_MIX' ? { isCorrect } : {}),
         type,
         amount,
         balance,
@@ -136,6 +142,7 @@ export async function handleEpisodeEvent(req: Request, res: Response, next: Next
     return res.status(500).json({ message: 'Error handling episode events', error: error.message });
   }
 }
+
 
 export async function getEpisodeStats(req: Request, res: Response, next: NextFunction) {
   try {
@@ -203,31 +210,55 @@ export async function getEpisodeStats(req: Request, res: Response, next: NextFun
 
 export async function getGlobalPerformanceStats(req: Request, res: Response, next: NextFunction) {
   try {
-    const totalAmountWon = await EpisodeEventsModel.aggregate([
+     // Calculate total amount won
+     const totalAmountWon = await EpisodeEventsModel.aggregate([
       {
-        $match: {
-          type: { $in: ['QUESTION', 'QUESTION_NUMBER'] }, isCorrect: true
-        }
+        $match: { isCorrect: true, type: { $in: ['QUESTION', 'QUESTION_NUMBER'] } }
       },
       {
         $group: {
-          _id: "$type", totalAmountWon: { $sum: "$amount" }, totalCorrectQuestions: { $sum: 1 }
+          _id: null,
+          totalAmountWon: { $sum: "$amount" }
         }
       }
     ]);
 
+    // Calculate total amount lost
     const totalAmountLost = await EpisodeEventsModel.aggregate([
       {
-        $match: {
-          type: { $in: ['QUESTION', 'QUESTION_NUMBER'] }, isCorrect: false
-        }
+        $match: { isCorrect: false, type: { $in: ['QUESTION', 'QUESTION_NUMBER', "CODE_MIX"] } }
       },
       {
         $group: {
-          _id: "$type", totalAmountLost: { $sum: "$amount" }, totalIncorrectQuestions: { $sum: 1 }
+          _id: null,
+          totalAmountLost: { $sum: "$amount" } 
         }
       }
     ]);
+
+    const totalAmounLostOnType = await EpisodeEventsModel.aggregate([
+      {
+        $match: { isCorrect: false }
+      },
+      {
+        $group: { _id: "$type", totalAmountLost: { $sum: "$amount" }, count: { $sum: 1 } }
+      },
+      {
+        $project: { _id: 0,type: "$_id", totalAmountLost: 1, count: 1 }
+      }
+    ]);
+    const totalAmountWonOnType = await EpisodeEventsModel.aggregate([
+      {
+        $match: { isCorrect: true }
+      },
+      {
+        $group: { _id: "$type", totalAmountLost: { $sum: "$amount" }, count: { $sum: 1 } }
+      },
+      {
+        $project: { _id: 0,type: "$_id", totalAmountLost: 1, count: 1 }
+      }
+    ]);
+    
 
     const totalQuestions = await EpisodeEventsModel.aggregate([
       {
@@ -242,40 +273,39 @@ export async function getGlobalPerformanceStats(req: Request, res: Response, nex
       }
     ]);
 
-    const codemixWordLoss = await EpisodeEventsModel.aggregate([
-      {
-        $match: { type: "CODE_MIX" }
-      },
-      {
-        $group: { _id: "$response", totalAmountLost: { $sum: "$amount" } }
-      },
-      {
-        $sort: { totalAmountLost: -1 }
-      }
-    ]);
-
     const totalCodemixResponses = await EpisodeEventsModel.aggregate([
       {
         $match: { type: "CODE_MIX" }
       },
       {
-        $group: { _id: "$response", totalResponses: { $sum: 1 } }
+        $group: {
+          _id: "$response",
+          totalAmountLost: { $sum: "$amount" },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { totalAmountLost: -1 }
+      },
+      {
+        $project: {
+          _id: 0,
+          words: "$_id",
+          totalAmountLost: 1,
+          count: 1
+        }
       }
     ]);
+    
+
 
     const response = {
-      totalAmountWon: {
-        QUESTION: totalAmountWon.find(t => t._id === 'QUESTION') || { totalAmountWon: 0, totalCorrectQuestions: 0 },
-        QUESTION_NUMBER: totalAmountWon.find(t => t._id === 'QUESTION_NUMBER') || { totalAmountWon: 0, totalCorrectQuestions: 0 },
-      },
-      totalAmountLost: {
-        QUESTION: totalAmountLost.find(t => t._id === 'QUESTION') || { totalAmountLost: 0, totalIncorrectQuestions: 0 },
-        QUESTION_NUMBER: totalAmountLost.find(t => t._id === 'QUESTION_NUMBER') || { totalAmountLost: 0, totalIncorrectQuestions: 0 },
-      },
+      totalAmounLostOnType,
+      totalAmountWon: totalAmountWon.length ? totalAmountWon[0].totalAmountWon : 0,
+      totalAmountLost: totalAmountLost.length ? totalAmountLost[0].totalAmountLost : 0,
       totalAskedQuestions: totalQuestions.length ? totalQuestions[0].totalAskedQuestions : 0,
-      codemixWordLoss,
-      totalCodemixResponses
-
+      totalCodemixResponses,
+      totalAmountWonOnType
     };
 
     return res.status(200).json(response);
