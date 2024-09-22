@@ -66,3 +66,34 @@ export async function createEpisode(
     return res.status(500).json({ message: "Error creating episode", error });
   }
 }
+
+export async function getPendingParticipants(req: Request, res: Response, next: NextFunction) {
+  try {
+    const pendingParticipants = await Participants.aggregate([
+      {
+        $match: { status: "Pending" }
+      },
+      {
+        $lookup: { from: "episodes", localField: "_id", foreignField: "participant_id", as: "episode" }
+      },
+      {
+        $addFields: {
+          hasEpisode: { $gt: [{ $size: "$episode" }, 0] }
+        }
+      },
+      {
+        $project: { fullName: 1, status: 1, hasEpisode: 1 }
+      }
+    ]);
+
+    if (!pendingParticipants.length) {
+      return res.status(404).json({ message: "No pending participants found" });
+    }
+
+    return res.status(200).json({ participants: pendingParticipants });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error retrieving participants", error });
+  }
+}

@@ -209,8 +209,8 @@ export async function getEpisodeStats(req: Request, res: Response, next: NextFun
 
 export async function getGlobalPerformanceStats(req: Request, res: Response, next: NextFunction) {
   try {
-     // Calculate total amount won
-     const totalAmountWon = await EpisodeEventsModel.aggregate([
+    // Calculate total amount won
+    const totalAmountWon = await EpisodeEventsModel.aggregate([
       {
         $match: { isCorrect: true, type: { $in: ['QUESTION', 'QUESTION_NUMBER'] } }
       },
@@ -230,7 +230,7 @@ export async function getGlobalPerformanceStats(req: Request, res: Response, nex
       {
         $group: {
           _id: null,
-          totalAmountLost: { $sum: "$amount" } 
+          totalAmountLost: { $sum: "$amount" }
         }
       }
     ]);
@@ -243,7 +243,7 @@ export async function getGlobalPerformanceStats(req: Request, res: Response, nex
         $group: { _id: "$type", totalAmountLost: { $sum: "$amount" }, count: { $sum: 1 } }
       },
       {
-        $project: { _id: 0,type: "$_id", totalAmountLost: 1, count: 1 }
+        $project: { _id: 0, type: "$_id", totalAmountLost: 1, count: 1 }
       }
     ]);
     const totalAmountWonOnType = await EpisodeEventsModel.aggregate([
@@ -251,13 +251,13 @@ export async function getGlobalPerformanceStats(req: Request, res: Response, nex
         $match: { isCorrect: true }
       },
       {
-        $group: { _id: "$type", totalAmountLost: { $sum: "$amount" }, count: { $sum: 1 } }
+        $group: { _id: "$type", totalAmountLost: { $sum: "$balance" }, count: { $sum: 1 } }
       },
       {
-        $project: { _id: 0,type: "$_id", totalAmountLost: 1, count: 1 }
+        $project: { _id: 0, type: "$_id", totalAmountLost: 1, count: 1 }
       }
     ]);
-    
+
 
     const totalQuestions = await EpisodeEventsModel.aggregate([
       {
@@ -295,7 +295,7 @@ export async function getGlobalPerformanceStats(req: Request, res: Response, nex
         }
       }
     ]);
-    
+
 
 
     const response = {
