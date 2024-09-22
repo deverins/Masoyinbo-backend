@@ -116,7 +116,6 @@ export async function handleEpisodeEvent(req: Request, res: Response, next: Next
           normalizedResponse.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
       }
 
-      // Set isCorrect to false for CODE_MIX type
       if (type === 'CODE_MIX') {
         isCorrect = false;
       }

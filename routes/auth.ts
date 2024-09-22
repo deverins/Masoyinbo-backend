@@ -1,4 +1,3 @@
-// routes/auth.ts
 import express from "express";
 import { createParticipant } from '../controllers/participants';
 import { ValidatorMDW } from '../validators/authHandler';
