@@ -1,31 +1,24 @@
 import mongoose, { Schema } from 'mongoose';
+import { amountWonValidator, availableAmountToWinValidator, createdByValidator, episodeDateValidator, episodeLinkValidator, episodeNumberValidator, participantIDValidator } from '../validators/episode';
 type episode = Document & {
   episodeLink: string;
-  date: Date;
-  noQuestionsGotten: number;
-  noQuestionsMissed: number;
-  totalQuestionAttempted: number;
+  episodeDate: string;
+  episodeNumber: number;
   amountWon: number;
-  availableAmounToWin: number;
+  availableAmountToWin: number;
   participant_id: mongoose.Schema.Types.ObjectId;
   createdBy: mongoose.Schema.Types.ObjectId;
-  createdAt: Date;
-  totalMoneyDeducted: number;
-  totalCorrectAnswers: number;
+  createdAt: Date
 };
 const EpisodeSchema: Schema = new Schema({
-  episodeLink: { type: String, required: true },
-  date: { type: Date, default: Date.now },
+  episodeLink: { type: String, required: true, validate: episodeLinkValidator},
+  episodeDate: { type: String, required:true, validate: episodeDateValidator},
   createdAt: { type: Date, default: Date.now },
-  noQuestionsGotten: { type: Number, required: true },
-  noQuestionsMissed: { type: Number, required: true },
-  totalQuestionAttempted: { type: Number, required: true },
-  amountWon: { type: Number, required: true },
-  availableAmounToWin: { type: Number, required: true },
-  participant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Participants', required: true },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  totalMoneyDeducted: { type: Number, default: 0 },
-  totalCorrectAnswers: { type: Number, default: 0 },
+  amountWon: { type: Number, required: true, validate: amountWonValidator},
+  episodeNumber: { type: Number, required:true, unique:true, validate: episodeNumberValidator },
+  availableAmountToWin: { type: Number, required: true, validate: availableAmountToWinValidator},
+  participant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Participants', required: true, validate: participantIDValidator},
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, validate: createdByValidator}
 });
 
 export const EpisodeModel = mongoose.model<episode>('Episode', EpisodeSchema);

@@ -33,3 +33,14 @@ export const getParticipants = async (req: Request, res: Response) => {
       res.status(500).json({ message: 'Error fetching participants', error });
   }
 };
+
+export async function getPendingParticipants(req: Request, res: Response) {
+  try {
+    const pendingParticipants = await Participants.find({ status: 'Pending' })
+    return res.status(200).json({ participants: pendingParticipants });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error retrieving participants", error });
+  }
+}

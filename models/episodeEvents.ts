@@ -9,7 +9,6 @@ import {
   responseValidator
 } from "../validators/episodeEventsValidators";
 
-
 export type episodeEvents = Document & {
   question?: string;
   correctAnswer?: string;
@@ -25,8 +24,8 @@ export type episodeEvents = Document & {
 const EpisodeEventsSchema: Schema = new Schema({
   question: [{ type: String, required: true, validate: questionValidator }],
   correctAnswer: { type: String, validate: correctAnswerValidator, },
-  response: { type: String, default: "No response?", required: true, validate: responseValidator, },
-  isCorrect: { type: Boolean, validate: isCorrectValidator, },
+  response: { type: String, default: "No response", required: true, validate: responseValidator, },
+  isCorrect: { type: Boolean, default:false, validate: isCorrectValidator, },
   type: { type: String, required: true, validate: typeValidator, },
   amount: { type: Number, required: true, validate: amountValidator, },
   balance: { type: Number, required: true, validate: balanceValidator, },

@@ -1,15 +1,14 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { EpisodeModel } from "../../models/episode";
 import { Participants } from "../../models/participants";
 
 /** Create a new episode */
 export async function createEpisode(
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ) {
   try {
-    const { episodeLink, participant_id, createdBy, amountWon, availableAmounToWin, episodeDate } = req.body;
+    const { episodeLink, participant_id, episodeNumber, createdBy, episodeDate, amountWon, availableAmountToWin } = req.body;
 
     const participant = await Participants.findById(participant_id).exec();
 
@@ -39,14 +38,10 @@ export async function createEpisode(
       episodeLink,
       participant_id,
       createdBy,
-      availableAmounToWin,
-      noQuestionsGotten: 0,
-      noQuestionsMissed: 0,
-      totalQuestionAttempted: 0,
-      date: episodeDate || Date.now(),
+      availableAmountToWin,
+      episodeDate,
       amountWon,
-      totalMoneyDeducted: 0,
-      totalCorrectAnswers: 0,
+      episodeNumber,
     });
 
     await newEpisode.save();
@@ -67,33 +62,7 @@ export async function createEpisode(
   }
 }
 
-export async function getPendingParticipants(req: Request, res: Response, next: NextFunction) {
-  try {
-    const pendingParticipants = await Participants.aggregate([
-      {
-        $match: { status: "Pending" }
-      },
-      {
-        $lookup: { from: "episodes", localField: "_id", foreignField: "participant_id", as: "episode" }
-      },
-      {
-        $addFields: {
-          hasEpisode: { $gt: [{ $size: "$episode" }, 0] }
-        }
-      },
-      {
-        $project: { fullName: 1, status: 1, hasEpisode: 1 }
-      }
-    ]);
-
-    if (!pendingParticipants.length) {
-      return res.status(404).json({ message: "No pending participants found" });
-    }
-
-    return res.status(200).json({ participants: pendingParticipants });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error retrieving participants", error });
-  }
+export async function getAllEpisodes(){
+  
 }
+

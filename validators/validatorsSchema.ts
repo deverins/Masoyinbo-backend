@@ -45,10 +45,7 @@ const eventSchema = Joi.object({
         then: Joi.string().min(1).required(),
         otherwise: Joi.string().allow('')
     }),
-    isCorrect: Joi.boolean().when('type', {
-        is: Joi.string().valid('QUESTION_NUMBER', 'QUESTION'),
-        otherwise: Joi.forbidden()
-    }),
+    isCorrect: Joi.boolean().optional(),
     type: Joi.string().valid('QUESTION_NUMBER', 'QUESTION', 'CODE_MIX').required(),
     amount: Joi.number().required(),
     balance: Joi.number().required(),
