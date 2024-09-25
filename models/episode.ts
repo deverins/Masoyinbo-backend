@@ -1,3 +1,4 @@
+// models/episode.ts
 import mongoose, { Schema } from 'mongoose';
 import { amountWonValidator, availableAmountToWinValidator, createdByValidator, episodeDateValidator, episodeLinkValidator, episodeNumberValidator, participantIDValidator } from '../validators/episode';
 type episode = Document & {

@@ -13,7 +13,7 @@ export async function getEpisodeEventDetail(req: Request, res: Response) {
     }
 
     const episodeObjectId = new mongoose.Types.ObjectId(episodeId);
-    const episodeDetails = await EpisodeModel.findById(episodeObjectId).exec();
+    const episodeDetails = await EpisodeModel.findById(episodeObjectId);
 
     if (!episodeDetails) {
       return res.status(404).json({ message: 'Episode not found' });
@@ -74,7 +74,7 @@ export async function createEpisodeEvents(req: Request, res: Response) {
   try {
     const { episodeId, events } = req.body;
 
-    const episode = await EpisodeModel.findById(episodeId).exec();
+    const episode = await EpisodeModel.findById(episodeId);
     if (!episode) {
       return res.status(404).json({ message: 'Episode not found' });
     }
@@ -179,3 +179,54 @@ export async function getPerformanceStats(req: Request, res: Response) {
     return res.status(500).json({ message: 'Error retrieving episode statistics', error: error.message });
   }
 }
+
+export const editEpisodeEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { events } = req.body;
+
+    if (!events || events.length === 0) {
+      return res.status(400).json({ message: 'Event details are required.' });
+    }
+
+    const { question, correctAnswer, response, isCorrect, type, amount, balance } = events[0];
+
+    const updatedEvent = await EpisodeEventsModel.findByIdAndUpdate(
+      id,
+      {
+        question,
+        correctAnswer,
+        response,
+        isCorrect,
+        type,
+        amount,
+        balance,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    return res.status(200).json({ message: 'Event updated successfully.', event: updatedEvent });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Error updating Episode Event', error: error.message });
+  }
+};
+
+export const deleteEpisodeEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const deletedEvent = await EpisodeEventsModel.findByIdAndDelete(id);
+
+    if (!deletedEvent) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    return res.status(200).json({ message: 'Event deleted successfully.' });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Error delete Episode Event', error: error.message });
+  }
+};

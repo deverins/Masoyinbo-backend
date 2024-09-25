@@ -62,7 +62,13 @@ export async function createEpisode(
   }
 }
 
-export async function getAllEpisodes(){
-  
+/** Get all episodes */
+export async function getAllEpisodes(req: Request, res: Response) {
+  try {
+    const episodes = await EpisodeModel.find()
+      .sort({ episodeDate: -1 });
+    return res.status(200).json(episodes);
+  } catch (error:any) {
+    return res.status(500).json({ message: "Error fetching episodes", error: error.message });
+  }
 }
-

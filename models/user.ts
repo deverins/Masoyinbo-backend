@@ -1,11 +1,14 @@
+// models/user.ts
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
+type UserRoles = 'admin';
 
 type userDetails = Document & {
   fullName?: string;
   username?: string;
   email?: string;
   password?: string;
+  role: UserRoles
 }
 
 const UserSchema: Schema = new Schema({
@@ -13,7 +16,7 @@ const UserSchema: Schema = new Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-});
+  role: { type: String, enum: ['admin'], default: 'admin', required: true }});
 
 UserSchema.pre("save", function (next) {
   const user = this;

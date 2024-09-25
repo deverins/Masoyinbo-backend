@@ -1,24 +1,35 @@
-import mongoose, { Document } from 'mongoose';
-import { EpisodeEventsModel } from '../models/episodeEvents';
+// middlewares/episodeEventsMiddleware.ts
+import { Request, Response, NextFunction } from 'express';
+import { UserModel } from '../models/user';
 
-interface EpisodeEventsDoc extends Document {
-  response: string | number | 'codemix';
-  amount: number;
-  balance: number;
-  episode_id: mongoose.Types.ObjectId;
+interface CustomRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+  };
 }
 
-EpisodeEventsModel.schema.pre<EpisodeEventsDoc>('save', function (next) {
-  if (this.response === 'codemix') {
-    this.amount -= 10000;
-    this.balance -= 10000;
-  }
-  next();
-});
+export const checkAdmin = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.body.userId;
 
-EpisodeEventsModel.schema.post<EpisodeEventsDoc>('save', async function () {
-  const episode = await mongoose.model('Episode').findById(this.episode_id);
-  if (episode) {
-    await episode.updateStats(this);
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required.' });
+    }
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    req.user = {
+      id: user._id.toString(),
+      role: user.role,
+    };
+
+    next();
+  } catch (error:any) {
+    return res.status(500).json({ message: 'user authentication error', error: error.message });
   }
-});
+};

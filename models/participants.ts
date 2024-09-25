@@ -1,3 +1,4 @@
+// models/participants.ts
 import mongoose, { Schema } from 'mongoose';
 
 type participants = Document & {
