@@ -1,4 +1,3 @@
-// middlewares/episodeEventsMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { UserModel } from '../models/user';
 
@@ -29,7 +28,7 @@ export const checkAdmin = async (req: CustomRequest, res: Response, next: NextFu
     };
 
     next();
-  } catch (error:any) {
+  } catch (error: any) {
     return res.status(500).json({ message: 'user authentication error', error: error.message });
   }
 };
