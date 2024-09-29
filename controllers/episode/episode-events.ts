@@ -50,10 +50,6 @@ export async function getEpisodeEventDetail(req: Request, res: Response) {
       }
     ]);
 
-    if (events.length === 0) {
-      return res.status(404).json({ message: 'No events found with participants' });
-    }
-
     const message = `Successfully retrieved event(s) for episode ${episodeDetails.episodeNumber}.`;
 
     return res.status(200).json({
@@ -109,32 +105,42 @@ export async function createEpisodeEvents(req: Request, res: Response) {
 
 export async function getPerformanceStats(req: Request, res: Response) {
   try {
+    // Fetch recent episodes, sorted by date
     const recentEpisodes = await EpisodeModel.find({})
       .sort({ episodeDate: -1 })
       .limit(10)
       .select('episodeLink');
 
     // Fetch participants with 'Pending' status for the request pool
-    const totalWaitingPaticipants = await Participants.countDocuments({ status: 'Pending' })
-    const [totalQuestions, totalCorrectAnwers, episodesData, lossTypeData, codemixData] =
+    const totalWaitingParticipants = await Participants.countDocuments({ status: 'Pending' });
+
+    // Perform queries to retrieve various stats
+    const [totalQuestions, totalCorrectAnswers, episodesData, latestEpisode, lossTypeData, codemixData] =
       await Promise.all([
+        // Count total questions
         EpisodeEventsModel.countDocuments({ type: 'QUESTION' }),
+        // Count total correct answers where type is QUESTION
         EpisodeEventsModel.countDocuments({ isCorrect: true, type: 'QUESTION' }),
+        // Aggregate total won amounts and total episodes
         EpisodeModel.aggregate([
           {
             $group: {
               _id: null,
               totalAmountWon: { $sum: "$amountWon" },
-              totalAmountAvailable: { $sum: "$availableAmountToWin" },
               totalEpisodes: { $sum: 1 }
             }
           }
         ]),
+        // Fetch the latest episode to get the availableAmountToWin value
+        EpisodeModel.findOne({})
+          .sort({ episodeDate: -1 })
+          .select('availableAmountToWin'),
         EpisodeEventsModel.aggregate([
           { $match: { isCorrect: false } },
           { $group: { _id: "$type", totalAmountLost: { $sum: "$amount" }, count: { $sum: 1 } } },
           { $project: { _id: 0, type: "$_id", totalAmountLost: 1, count: 1 } }
         ]),
+        // Aggregate codemix events
         EpisodeEventsModel.aggregate([
           { $match: { type: "CODE_MIX" } },
           {
@@ -156,19 +162,20 @@ export async function getPerformanceStats(req: Request, res: Response) {
         ])
       ]);
 
+    // Extract results from the aggregation data
     const totalAmountWon = episodesData[0]?.totalAmountWon || 0;
-    const totalAmountAvailable = episodesData[0]?.totalAmountAvailable || 0;
     const totalEpisodes = episodesData[0]?.totalEpisodes || 0;
+    const totalAmountAvailable = latestEpisode?.availableAmountToWin || 0;
 
     return res.status(200).json({
       stats: {
         message: 'Successfully retrieved stats',
         totalEpisodes,
         totalQuestions,
-        totalCorrectAnwers,
+        totalCorrectAnswers,
         totalAmountAvailable,
         totalAmountWon,
-        totalWaitingPaticipants,
+        totalWaitingParticipants,
         recentEpisodes,
         lossTypeData,
         codemixData
@@ -180,28 +187,20 @@ export async function getPerformanceStats(req: Request, res: Response) {
   }
 }
 
+
 export const editEpisodeEvent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { events } = req.body;
+    const { event } = req.body;
 
-    if (!events || events.length === 0) {
+    if (!event || event.length === 0 ) {
       return res.status(400).json({ message: 'Event details are required.' });
     }
 
-    const { question, correctAnswer, response, isCorrect, type, amount, balance } = events[0];
+    const { question, correctAnswer, response, isCorrect, type, amount, balance } = event[0] || {};
 
     const updatedEvent = await EpisodeEventsModel.findByIdAndUpdate(
-      id,
-      {
-        question,
-        correctAnswer,
-        response,
-        isCorrect,
-        type,
-        amount,
-        balance,
-      },
+      id,{ question, correctAnswer, response, isCorrect, type, amount, balance, },
       { new: true, runValidators: true }
     );
 
