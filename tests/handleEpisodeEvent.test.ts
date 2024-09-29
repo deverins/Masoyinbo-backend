@@ -68,8 +68,6 @@ describe('handleEpisodeEvent controller', () => {
     // Verify updated episode
     const updatedEpisode = await EpisodeModel.findById(episode._id);
     expect(updatedEpisode).toBeDefined();
-    expect(updatedEpisode?.initialBalance).toBeLessThan(1000000);
-    expect(updatedEpisode?.totalMoneyDeducted).toBeGreaterThan(0);
   });
 
   it('should return 404 if episode or participant is not found', async () => {

@@ -18,11 +18,14 @@ const connectTestDB = async () => {
     throw new Error("Failed to connect to MongoDB");
   }
 };
-// Close the MongoDB connection after tests (only in Jest environment)
 if (process.env.NODE_ENV === "test") {
-  afterAll(async () => {
-    await mongoose.connection.close();
-  });
+  // Check if `afterAll` is defined, meaning we are in a Jest test environment
+  if (typeof afterAll === "function") {
+    afterAll(async () => {
+      await mongoose.connection.close();
+      console.log("MongoDB connection closed.");
+    });
+  }
 }
 export default connectTestDB;
 

@@ -2,18 +2,22 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
-    "rootDir": ".", // This points to the root directory
-    "outDir": "./dist", // Compiled files will go here
+    "rootDir": ".", 
+    "outDir": "./dist", 
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true
   },
   "include": [
-    "**/*.ts"
-, "tests/user.test.ts", "tests/user.test.ts"  ], // Include all .ts files in the root directory
+    "**/*.ts" 
+  ],
   "exclude": [
     "node_modules",
-    "dist"
-  ] // Exclude unnecessary directories
+    "dist",
+    "tests/**/*",      
+    "**/*.test.ts",    
+    "db/dbConnectionTest.ts" 
+  ]
+
 }

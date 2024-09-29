@@ -1,4 +1,3 @@
-// index.ts
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
