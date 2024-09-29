@@ -2,9 +2,9 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import connectTestDB from '../db/dbConnectionTest';
-import app from '../index';
 import { EpisodeModel } from '../models/episode';
 import { EpisodeEventsModel } from '../models/episodeEvents';
+import app from '..';
 
 beforeAll(async () => {
   await connectTestDB();

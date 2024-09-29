@@ -2,9 +2,9 @@ import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import connectTestDB from './db/dbConnectionTest';
 import connectDB from "./db/dbConnection";
 import { errorRoute, routers } from "./routes/allRoutes";
-import connectTestDB from "./db/dbConnectionTest";
 
 dotenv.config();
 

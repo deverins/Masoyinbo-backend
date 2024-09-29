@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Participants } from '../models/participants';
+import { Participants } from '../../models/participants';
 
 /** Create a new participant */
 export const createParticipant = async (req: Request, res: Response) => {

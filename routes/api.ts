@@ -1,9 +1,9 @@
 import express from "express";
-import { getParticipants, getPendingParticipants } from "../controllers/participants";
 import { getEpisodeEventDetail, getPerformanceStats, createEpisodeEvents, deleteEpisodeEvent, editEpisodeEvent } from "../controllers/episode/episode-events";
-import { createEpisode, getAllEpisodes,  } from "../controllers/episode/episodes";
 import { ValidatorMDW } from "../validators/authHandler";
 import { checkAdmin } from "../middlewares/episodeEventsMiddleware";
+import { createEpisode, getAllEpisodes } from "../controllers/episode/episodes";
+import { getParticipants, getPendingParticipants } from "../controllers/episode/participants";
 export const apiRoutes = express.Router();
 
 apiRoutes.get("/get-participants", getParticipants);

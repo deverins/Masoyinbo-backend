@@ -1,7 +1,7 @@
 import express from "express";
-import { createParticipant } from '../controllers/participants';
+import { createParticipant } from '../controllers/episode/participants';
 import { ValidatorMDW } from '../validators/authHandler';
-import { authenticateUser, createUser, getUserByEmail, updateUser, } from "../controllers/user";
+import { authenticateUser, createUser, getUserByEmail, updateUser, } from "../controllers/episode/user";
 
 const authRoutes = express.Router();
 

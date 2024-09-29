@@ -1,6 +1,5 @@
 import { UserModel } from "../models/user";
 
-
 /**
  * Exclude specified fields from the original data object.
  * @param {Record<string, any>} data Original data object

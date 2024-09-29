@@ -1,7 +1,7 @@
 import request from 'supertest';
-import app from '../index';
 import connectTestDB from '../db/dbConnectionTest';
 import mongoose from 'mongoose';
+import app from '../index';
 
 
 beforeAll(async () => {

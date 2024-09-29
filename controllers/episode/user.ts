@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { UserModel } from '../models/user';
-import { excludeFields, findUser } from '../utils/common.methods';
+import { UserModel } from '../../models/user';
+import { excludeFields, findUser } from '../../utils/common.methods';
 
 
 /** Create a new user
