@@ -1,4 +1,3 @@
-// routes/api.ts
 import express from "express";
 import { getParticipants, getPendingParticipants } from "../controllers/participants";
 import { getEpisodeEventDetail, getPerformanceStats, createEpisodeEvents, deleteEpisodeEvent, editEpisodeEvent } from "../controllers/episode/episode-events";

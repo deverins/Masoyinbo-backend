@@ -4,6 +4,7 @@ import { EpisodeEventsModel } from "../../models/episodeEvents";
 import { Participants } from '../../models/participants';
 import mongoose from 'mongoose';
 
+
 export async function getEpisodeEventDetail(req: Request, res: Response) {
   try {
     const { id: episodeId } = req.query as { id?: string };
@@ -26,15 +27,14 @@ export async function getEpisodeEventDetail(req: Request, res: Response) {
         }
       },
       {
-        $lookup: { from: 'episodes', localField: 'episodeId', foreignField: '_id', as: 'episodeDetails' }
+        $lookup: {
+          from: 'episodes',
+          localField: 'episodeId',
+          foreignField: '_id',
+          as: 'episodeDetails'
+        }
       },
       { $unwind: '$episodeDetails' },
-      {
-        $lookup: { from: 'participants', localField: 'episodeDetails.participant_id', foreignField: '_id', as: 'participantDetails' }
-      },
-      {
-        $unwind: { path: '$participantDetails', preserveNullAndEmptyArrays: true }
-      },
       {
         $project: {
           question: 1,
@@ -44,17 +44,25 @@ export async function getEpisodeEventDetail(req: Request, res: Response) {
           type: 1,
           amount: 1,
           balance: 1,
-          participantFullName: '$participantDetails.fullName'
-
         }
       }
     ]);
+
+    let participantFullName = 'Unknown Participant';
+    if (episodeDetails.participant_id) {
+      const participantDetails = await Participants.findById(episodeDetails.participant_id).select('fullName');
+
+      if (participantDetails && participantDetails.fullName) {
+        participantFullName = participantDetails.fullName;
+      }
+    }
 
     const message = `Successfully retrieved event(s) for episode ${episodeDetails.episodeNumber}.`;
 
     return res.status(200).json({
       message,
       events,
+      participantFullName,
       episode: episodeDetails
     });
 
@@ -63,8 +71,6 @@ export async function getEpisodeEventDetail(req: Request, res: Response) {
     return res.status(500).json({ message: 'Error retrieving episode details', error: error.message });
   }
 }
-
-
 
 export async function createEpisodeEvents(req: Request, res: Response) {
   try {
@@ -95,13 +101,12 @@ export async function createEpisodeEvents(req: Request, res: Response) {
       savedEvents.push(episodeEvent);
     }
 
-    return res.status(200).json({ message: 'Episode events handled successfully', events: savedEvents });
+    return res.status(200).json({ message: 'Episode events create successfully', events: savedEvents });
   } catch (error: any) {
     console.error('Error handling episode events:', error);
     return res.status(500).json({ message: 'Error handling episode events', error: error.message });
   }
 }
-
 
 export async function getPerformanceStats(req: Request, res: Response) {
   try {
@@ -187,20 +192,19 @@ export async function getPerformanceStats(req: Request, res: Response) {
   }
 }
 
-
 export const editEpisodeEvent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { event } = req.body;
 
-    if (!event || event.length === 0 ) {
+    if (!event || event.length === 0) {
       return res.status(400).json({ message: 'Event details are required.' });
     }
 
     const { question, correctAnswer, response, isCorrect, type, amount, balance } = event[0] || {};
 
     const updatedEvent = await EpisodeEventsModel.findByIdAndUpdate(
-      id,{ question, correctAnswer, response, isCorrect, type, amount, balance, },
+      id, { question, correctAnswer, response, isCorrect, type, amount, balance, },
       { new: true, runValidators: true }
     );
 
