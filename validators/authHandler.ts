@@ -23,6 +23,8 @@ export const SchemaMapper = (path: string): Joi.ObjectSchema | undefined => {
       return participantsPayloadValidator;
     case "/episode-events":
       return episodeEventPayloadValidator;
+    case "/episode-events":
+      return episodeEventPayloadValidator;
   }
 };
 

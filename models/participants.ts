@@ -25,7 +25,7 @@ const ParticipantsSchema: Schema = new Schema({
   socialMediaHandle: { type: String, required: true },
   source: [{ type: String, required: true }],
   comment: { type: String },
-  status: { type: String, default: 'Pending', enum: ['Pending', 'Scheduled', 'Completed'] },
+  status: { type: String, default: 'PENDING', enum: ['PENDING', 'SCHEDULED', 'COMPLETED'] },
 });
 
 export const Participants = mongoose.model<participants>('Participants', ParticipantsSchema);

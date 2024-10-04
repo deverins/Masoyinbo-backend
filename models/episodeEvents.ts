@@ -22,7 +22,7 @@ export type episodeEvents = Document & {
 }
 
 const EpisodeEventsSchema: Schema = new Schema({
-  question: [{ type: String, required: true, validate: questionValidator }],
+  question: { type: String, required: true, validate: questionValidator },
   correctAnswer: { type: String, validate: correctAnswerValidator, },
   response: { type: String, default: "No response", required: true, validate: responseValidator, },
   isCorrect: { type: Boolean, default:false, validate: isCorrectValidator, },

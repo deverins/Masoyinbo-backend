@@ -3,12 +3,13 @@ import { EpisodeModel } from "../../models/episode";
 import { EpisodeEventsModel } from "../../models/episodeEvents";
 import { Participants } from '../../models/participants';
 import mongoose from 'mongoose';
+import { UserModel } from '../../models/user';
 
 
 export async function getEpisodeEventDetail(req: Request, res: Response) {
   try {
-    const { id: episodeId } = req.query as { id?: string };
 
+    const { id: episodeId } = req.params;
     if (!episodeId) {
       return res.status(400).json({ message: 'episodeId is required' });
     }
@@ -72,41 +73,80 @@ export async function getEpisodeEventDetail(req: Request, res: Response) {
   }
 }
 
-export async function createEpisodeEvents(req: Request, res: Response) {
+export async function createEpisodeEvent(req: Request, res: Response) {
   try {
-    const { episodeId, events } = req.body;
+    const { episodeId, event } = req.body;
 
     const episode = await EpisodeModel.findById(episodeId);
     if (!episode) {
       return res.status(404).json({ message: 'Episode not found' });
     }
 
-    const savedEvents = [];
-    for (const event of events) {
-      const { question, correctAnswer, isCorrect, response, type, amount, balance } = event;
+    const { question, correctAnswer, isCorrect, response, type, amount, balance } = event;
 
+    const episodeEvent = new EpisodeEventsModel({
+      question,
+      correctAnswer,
+      response,
+      isCorrect,
+      type,
+      amount,
+      balance,
+      episodeId,
+    });
 
-      const episodeEvent = new EpisodeEventsModel({
-        question,
-        correctAnswer,
-        response,
-        isCorrect,
-        type,
-        amount,
-        balance,
-        episodeId,
-      });
+    await episodeEvent.save();
 
-      await episodeEvent.save();
-      savedEvents.push(episodeEvent);
-    }
-
-    return res.status(200).json({ message: 'Episode events create successfully', events: savedEvents });
+    return res.status(200).json({ message: 'Episode events create successfully', event: episodeEvent });
   } catch (error: any) {
     console.error('Error handling episode events:', error);
     return res.status(500).json({ message: 'Error handling episode events', error: error.message });
   }
 }
+
+export const editEpisodeEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { event } = req.body;
+
+    if (!event) {
+      return res.status(400).json({ message: 'Event details are required.' });
+    }
+
+    const { question, correctAnswer, isCorrect, response, type, amount, balance } = event;
+
+    const updatedEvent = await EpisodeEventsModel.findByIdAndUpdate(
+      id,
+      { question, correctAnswer, response, isCorrect, type, amount, balance },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    return res.status(200).json({ message: 'Event updated successfully.', event: updatedEvent });
+  } catch (error: any) {
+    console.error('Error updating Episode Event:', error);
+    return res.status(500).json({ message: 'Error updating Episode Event', error: error.message });
+  }
+};
+export const deleteEpisodeEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const deletedEvent = await EpisodeEventsModel.findByIdAndDelete(id);
+
+    if (!deletedEvent) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    return res.status(200).json({ message: 'Event deleted successfully.', event: deletedEvent });
+  } catch (error: any) {
+    console.error('Error deleting Episode Event:', error);
+    return res.status(500).json({ message: 'Error deleting Episode Event.', error: error.message });
+  }
+};
 
 export async function getPerformanceStats(req: Request, res: Response) {
   try {
@@ -118,7 +158,9 @@ export async function getPerformanceStats(req: Request, res: Response) {
 
     // Fetch participants with 'Pending' status for the request pool
     const totalWaitingParticipants = await Participants.countDocuments({ status: 'Pending' });
-
+    // Fetch total participant users (you can customize this query based on your requirements)
+    const totalParticipants = await Participants.countDocuments({});
+    const totalUsers = await UserModel.countDocuments({});
     // Perform queries to retrieve various stats
     const [totalQuestions, totalCorrectAnswers, episodesData, latestEpisode, lossTypeData, codemixData] =
       await Promise.all([
@@ -173,14 +215,16 @@ export async function getPerformanceStats(req: Request, res: Response) {
     const totalAmountAvailable = latestEpisode?.availableAmountToWin || 0;
 
     return res.status(200).json({
+      message: 'Successfully retrieved stats',
       stats: {
-        message: 'Successfully retrieved stats',
         totalEpisodes,
         totalQuestions,
         totalCorrectAnswers,
         totalAmountAvailable,
         totalAmountWon,
         totalWaitingParticipants,
+        totalParticipants,
+        totalUsers,
         recentEpisodes,
         lossTypeData,
         codemixData
@@ -191,45 +235,3 @@ export async function getPerformanceStats(req: Request, res: Response) {
     return res.status(500).json({ message: 'Error retrieving episode statistics', error: error.message });
   }
 }
-
-export const editEpisodeEvent = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { event } = req.body;
-
-    if (!event || event.length === 0) {
-      return res.status(400).json({ message: 'Event details are required.' });
-    }
-
-    const { question, correctAnswer, response, isCorrect, type, amount, balance } = event[0] || {};
-
-    const updatedEvent = await EpisodeEventsModel.findByIdAndUpdate(
-      id, { question, correctAnswer, response, isCorrect, type, amount, balance, },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedEvent) {
-      return res.status(404).json({ message: 'Event not found.' });
-    }
-
-    return res.status(200).json({ message: 'Event updated successfully.', event: updatedEvent });
-  } catch (error: any) {
-    return res.status(500).json({ message: 'Error updating Episode Event', error: error.message });
-  }
-};
-
-export const deleteEpisodeEvent = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    const deletedEvent = await EpisodeEventsModel.findByIdAndDelete(id);
-
-    if (!deletedEvent) {
-      return res.status(404).json({ message: 'Event not found.' });
-    }
-
-    return res.status(200).json({ message: 'Event deleted successfully.' });
-  } catch (error: any) {
-    return res.status(500).json({ message: 'Error delete Episode Event', error: error.message });
-  }
-};

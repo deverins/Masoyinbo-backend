@@ -115,3 +115,21 @@ export const updateUser = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Error updating user', error });
   }
 };
+
+/** 
+ * Get all user details
+ * 
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {void}
+ */
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    // Retrieve all users, excluding sensitive fields
+    const users = await UserModel.find().select('-password -__v');
+
+    return res.status(200).json({ message: 'All users retrieved successfully', users });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error retrieving all users', error });
+  }
+};

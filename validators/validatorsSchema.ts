@@ -54,7 +54,7 @@ const eventSchema = Joi.object({
 /** The validator for the episodeEvent payload */
 export const episodeEventPayloadValidator = Joi.object({
     episodeId: Joi.string().required(),
-    events: Joi.array().items(eventSchema).required()
+    event: eventSchema.required()
 });
 
 /**

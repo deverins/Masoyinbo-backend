@@ -24,23 +24,22 @@ export const createParticipant = async (req: Request, res: Response) => {
   }
 };
 
-/** Get all participants */
+/** Get participants */
 export const getParticipants = async (req: Request, res: Response) => {
   try {
-      const participants = await Participants.find();
+      let status = req.query.status as string
+      status = status.toUpperCase()
+
+      let query = {} as Record<string, string>; // Initialize an empty query object
+
+      if (status === 'PENDING' || status === 'COMPLETED') {
+        query.status = status; // Find documents where status is 'pending'
+      }
+
+      const participants = await Participants.find(query);
+      
       return res.status(200).json({ message: "Participants retrieved successfully", data: participants });
     } catch (error) {
       res.status(500).json({ message: 'Error fetching participants', error });
   }
 };
-
-export async function getPendingParticipants(req: Request, res: Response) {
-  try {
-    const pendingParticipants = await Participants.find({ status: 'Pending' })
-    return res.status(200).json({ participants: pendingParticipants });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error retrieving participants", error });
-  }
-}
