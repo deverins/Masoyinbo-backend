@@ -3,7 +3,7 @@
     "target": "es2016",
     "module": "commonjs",
     "rootDir": ".", 
-    "outDir": "./dist", 
+    "outDir": "./build", 
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -14,7 +14,7 @@
   ],
   "exclude": [
     "node_modules",
-    "dist",
+    "build",
     "tests/**/*",      
     "**/*.test.ts",    
     "db/dbConnectionTest.ts" 
