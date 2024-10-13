@@ -14,7 +14,7 @@ const EpisodeSchema: Schema = new Schema({
   episodeLink: { type: String, required: true, validate: episodeLinkValidator},
   episodeDate: { type: String, required:true, validate: episodeDateValidator},
   createdAt: { type: Date, default: Date.now },
-  amountWon: { type: Number, required: true, validate: amountWonValidator},
+  amountWon: { type: Number, default:0, validate: amountWonValidator},
   episodeNumber: { type: Number, required:true, unique:true, validate: episodeNumberValidator },
   availableAmountToWin: { type: Number, required: true, validate: availableAmountToWinValidator},
   participant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Participants', required: true, validate: participantIDValidator},

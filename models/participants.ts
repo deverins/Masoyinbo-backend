@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 type participants = Document & {
-  fullName?: string;
+  fullName: string;
   email?: string;
   mobileNumber: string;
   gender: string;

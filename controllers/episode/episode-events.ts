@@ -154,15 +154,16 @@ export async function getPerformanceStats(req: Request, res: Response) {
     const recentEpisodes = await EpisodeModel.find({})
       .sort({ episodeDate: -1 })
       .limit(10)
-      .select('episodeLink');
+      .select('episodeLink')
+      .select('episodeNumber');
 
     // Fetch participants with 'Pending' status for the request pool
-    const totalWaitingParticipants = await Participants.countDocuments({ status: 'Pending' });
+    const totalWaitingParticipants = await Participants.countDocuments({ status: 'PENDING' });
     // Fetch total participant users (you can customize this query based on your requirements)
     const totalParticipants = await Participants.countDocuments({});
     const totalUsers = await UserModel.countDocuments({});
     // Perform queries to retrieve various stats
-    const [totalQuestions, totalCorrectAnswers, episodesData, latestEpisode, lossTypeData, codemixData] =
+    const [totalQuestions, totalCorrectAnswers, episodesData, totalAvailableAmount, lossTypeData, codemixData] =
       await Promise.all([
         // Count total questions
         EpisodeEventsModel.countDocuments({ type: 'QUESTION' }),
@@ -178,10 +179,16 @@ export async function getPerformanceStats(req: Request, res: Response) {
             }
           }
         ]),
-        // Fetch the latest episode to get the availableAmountToWin value
-        EpisodeModel.findOne({})
-          .sort({ episodeDate: -1 })
-          .select('availableAmountToWin'),
+        // Sum the total available amount to win across all episodes
+        EpisodeModel.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalAvailableAmount: { $sum: "$availableAmountToWin" }
+            }
+          }
+        ]),
+
         EpisodeEventsModel.aggregate([
           { $match: { isCorrect: false } },
           { $group: { _id: "$type", totalAmountLost: { $sum: "$amount" }, count: { $sum: 1 } } },
@@ -212,7 +219,7 @@ export async function getPerformanceStats(req: Request, res: Response) {
     // Extract results from the aggregation data
     const totalAmountWon = episodesData[0]?.totalAmountWon || 0;
     const totalEpisodes = episodesData[0]?.totalEpisodes || 0;
-    const totalAmountAvailable = latestEpisode?.availableAmountToWin || 0;
+    const totalAmountAvailable = totalAvailableAmount[0]?.totalAvailableAmount || 0;
 
     return res.status(200).json({
       message: 'Successfully retrieved stats',

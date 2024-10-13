@@ -38,7 +38,7 @@ export const isCorrectValidator = {
 };
 
 export const typeValidator = {
-  validator: function (value: boolean) {
+  validator: function (value: string) {
     return (
       typeof value === "string" &&
       ["QUESTION_NUMBER", "QUESTION", "CODE_MIX"].includes(value)

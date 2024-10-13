@@ -27,7 +27,7 @@ export const availableAmountToWinValidator = {
 
 export const amountWonValidator = {
   validator: function (this: any, value: number) {
-    return !!value && this.availableAmountToWin >= value
+    return value > -1 && this.availableAmountToWin >= value
   },
   message: "amountWon is required"
 }

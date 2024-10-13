@@ -24,7 +24,7 @@ export type episodeEvents = Document & {
 const EpisodeEventsSchema: Schema = new Schema({
   question: { type: String, validate: questionValidator },
   correctAnswer: { type: String, validate: correctAnswerValidator, },
-  response: { type: String, default: "No response", required: true, validate: responseValidator, },
+  response: { type: String, default: "No response", validate: responseValidator, },
   isCorrect: { type: Boolean, default:false, validate: isCorrectValidator, },
   type: { type: String, required: true, validate: typeValidator, },
   amount: { type: Number, required: true, validate: amountValidator, },
