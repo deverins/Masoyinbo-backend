@@ -2,10 +2,10 @@
   "name": "masoyinbo-backend",
   "version": "1.0.0",
   "description": "This project serves as the backend for a masoyinbo site.",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node build/index.js",
+    "start": "ts-node-dev index.ts",
     "dev": "cross-env NODE_ENV=development nodemon index.ts",
     "test": "cross-env NODE_ENV=test jest --passWithNoTests --detectOpenHandles"
   },
