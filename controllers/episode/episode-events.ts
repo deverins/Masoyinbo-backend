@@ -163,12 +163,23 @@ export async function getPerformanceStats(req: Request, res: Response) {
     const totalParticipants = await Participants.countDocuments({});
     const totalUsers = await UserModel.countDocuments({});
     // Perform queries to retrieve various stats
-    const [totalQuestions, totalCorrectAnswers, episodesData, totalAvailableAmount, lossTypeData, codemixData] =
+    const [
+      totalQuestions,
+      totalCorrectAnswers,
+      totalWrongAnswers,
+      episodesData,
+      totalAvailableAmount,
+      lossTypeData,
+      codemixData,
+      totalAmountLostData
+    ] =
       await Promise.all([
         // Count total questions
         EpisodeEventsModel.countDocuments({ type: 'QUESTION' }),
         // Count total correct answers where type is QUESTION
         EpisodeEventsModel.countDocuments({ isCorrect: true, type: 'QUESTION' }),
+        // Count total wrong answers where type is QUESTION
+        EpisodeEventsModel.countDocuments({ isCorrect: false, type: 'QUESTION' }),
         // Aggregate total won amounts and total episodes
         EpisodeModel.aggregate([
           {
@@ -213,13 +224,19 @@ export async function getPerformanceStats(req: Request, res: Response) {
               count: 1
             }
           }
-        ])
+        ]),
+        EpisodeEventsModel.aggregate([
+          { $match: { isCorrect: false } },
+          { $group: { _id: null, totalAmountLost: { $sum: "$amount" } } }
+        ]),
       ]);
+    // Calculate total amount lost across all episodes
 
     // Extract results from the aggregation data
     const totalAmountWon = episodesData[0]?.totalAmountWon || 0;
     const totalEpisodes = episodesData[0]?.totalEpisodes || 0;
     const totalAmountAvailable = totalAvailableAmount[0]?.totalAvailableAmount || 0;
+    const totalAmountLost = totalAmountLostData[0]?.totalAmountLost || 0; // Extract total loss
 
     return res.status(200).json({
       message: 'Successfully retrieved stats',
@@ -227,8 +244,10 @@ export async function getPerformanceStats(req: Request, res: Response) {
         totalEpisodes,
         totalQuestions,
         totalCorrectAnswers,
+        totalWrongAnswers,
         totalAmountAvailable,
         totalAmountWon,
+        totalAmountLost,
         totalWaitingParticipants,
         totalParticipants,
         totalUsers,
