@@ -153,7 +153,7 @@ export async function getPerformanceStats(req: Request, res: Response) {
     // Fetch recent episodes, sorted by date
     const recentEpisodes = await EpisodeModel.find({})
       .sort({ episodeDate: -1 })
-      .limit(10)
+      .limit(8)
       .select('episodeLink')
       .select('episodeNumber');
 
