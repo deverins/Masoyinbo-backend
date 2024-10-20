@@ -2,7 +2,7 @@ export const episodeNumberValidator = {
   validator: function (this: any, value: number) {
     return !!value;
   },
-  message:'episode number is expected',
+  message: 'episode number is expected',
 };
 
 export const episodeLinkValidator = {
@@ -27,10 +27,11 @@ export const availableAmountToWinValidator = {
 
 export const amountWonValidator = {
   validator: function (this: any, value: number) {
-    return value > -1 && this.availableAmountToWin >= value
+    const availableAmountToWin = this.get('availableAmountToWin');
+    return value > -1 && availableAmountToWin >= value;
   },
   message: "amountWon is required"
-}
+};
 
 export const participantIDValidator = {
   validator: function (this: any, value: string) {

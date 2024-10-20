@@ -62,13 +62,62 @@ export async function createEpisode(
   }
 }
 
+/** Edit episode */
+export async function editEpisode(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    console.log("Id", id)
+    const updatedData = req.body;
+
+    if (!updatedData) {
+      return res.status(404).json({ message: "episode details are required." });
+    }
+    const { episodeLink, episodeDate, episodeNumber, amountWon, availableAmountToWin, participant_id, createdBy } = updatedData;
+
+    const episode = await EpisodeModel.findByIdAndUpdate(
+      id,
+      { episodeLink, episodeDate, episodeNumber, amountWon, availableAmountToWin, participant_id, createdBy }, { new: true, runValidators: true }
+    );
+
+    if (!episode) {
+      return res.status(404).json({ message: "Episode not found" });
+    }
+
+    return res.status(200).json({
+      message: "Episode updated successfully",
+      episode,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error updating episode", error });
+  }
+}
+
+/** Delete episode */
+export async function deleteEpisode(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+
+    const episode = await EpisodeModel.findByIdAndDelete(id);
+
+    if (!episode) {
+      return res.status(404).json({ message: "Episode not found" });
+    }
+
+    return res.status(200).json({
+      message: "Episode deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error deleting episode", error });
+  }
+}
+
 /** Get all episodes */
 export async function getAllEpisodes(req: Request, res: Response) {
   try {
     const episodes = await EpisodeModel.find()
       .sort({ episodeDate: -1 });
     return res.status(200).json(episodes);
-  } catch (error:any) {
+  } catch (error: any) {
     return res.status(500).json({ message: "Error fetching episodes", error: error.message });
   }
 }

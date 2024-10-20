@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Participants } from '../../models/participants';
+import { EpisodeModel } from '../../models/episode';
 
 /** Create a new participant */
 export const createParticipant = async (req: Request, res: Response) => {
@@ -27,19 +28,57 @@ export const createParticipant = async (req: Request, res: Response) => {
 /** Get participants */
 export const getParticipants = async (req: Request, res: Response) => {
   try {
-      let status = req.query.status as string
-      status = status.toUpperCase()
+    let status = req.query.status as string
+    status = status.toUpperCase()
 
-      let query = {} as Record<string, string>; // Initialize an empty query object
+    let query = {} as Record<string, string>; // Initialize an empty query object
 
-      if (status === 'PENDING' || status === 'COMPLETED') {
-        query.status = status; // Find documents where status is 'pending'
-      }
+    if (status === 'PENDING' || status === 'COMPLETED') {
+      query.status = status; // Find documents where status is 'pending'
+    }
 
-      const participants = await Participants.find(query);
-      
-      return res.status(200).json({ message: "Participants retrieved successfully", data: participants });
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching participants', error });
+    const participants = await Participants.find(query);
+
+    return res.status(200).json({ message: "Participants retrieved successfully", data: participants });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching participants', error });
   }
 };
+/** Get participants Results */
+export const getParticipantResults = async (req: Request, res: Response) => {
+  try {
+    // Aggregation pipeline
+    const results = await EpisodeModel.aggregate([
+      {
+        $lookup: {
+          from: 'participants',
+          localField: 'participant_id',
+          foreignField: '_id',
+          as: 'participantDetails',
+        },
+      },
+      {
+        $unwind: {
+          path: '$participantDetails',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          amountWon: 1,
+          episodeNumber: 1,
+          episodeLink: 1,
+          participantFullName: { $ifNull: ['$participantDetails.fullName', 'Unknown'] },
+        },
+      },
+    ]);
+    // Send the results back to the client
+    res.status(200).json({ participantResultData: results });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while fetching participant results' });
+  }
+};
+
+
+
