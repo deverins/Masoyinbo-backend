@@ -171,7 +171,8 @@ export async function getPerformanceStats(req: Request, res: Response) {
       totalAvailableAmount,
       lossTypeData,
       codemixData,
-      totalAmountLostData
+      totalAmountLostData,
+      amountWonStats
     ] =
       await Promise.all([
         // Count total questions
@@ -229,14 +230,31 @@ export async function getPerformanceStats(req: Request, res: Response) {
           { $match: { isCorrect: false } },
           { $group: { _id: null, totalAmountLost: { $sum: "$amount" } } }
         ]),
+        // Total occurrences of each 'amountWon'
+        EpisodeModel.aggregate([
+          {
+            $group: {
+              _id: "$amountWon",
+              count: { $sum: 1 }
+            }
+          },
+          {
+            $sort: { _id: 1 }
+          },
+          {
+            $project: {
+              _id: 0,
+              amountWon: "$_id",
+              count: 1
+            }
+          }
+        ])
       ]);
-    // Calculate total amount lost across all episodes
-
     // Extract results from the aggregation data
     const totalAmountWon = episodesData[0]?.totalAmountWon || 0;
     const totalEpisodes = episodesData[0]?.totalEpisodes || 0;
     const totalAmountAvailable = totalAvailableAmount[0]?.totalAvailableAmount || 0;
-    const totalAmountLost = totalAmountLostData[0]?.totalAmountLost || 0; // Extract total loss
+    const totalAmountLost = totalAmountLostData[0]?.totalAmountLost || 0;
 
     return res.status(200).json({
       message: 'Successfully retrieved stats',
@@ -253,7 +271,8 @@ export async function getPerformanceStats(req: Request, res: Response) {
         totalUsers,
         recentEpisodes,
         lossTypeData,
-        codemixData
+        codemixData,
+        amountWonStats
       },
     });
   } catch (error: any) {
