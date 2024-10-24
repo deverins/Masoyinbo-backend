@@ -7,4 +7,5 @@ node_modules
 build/
 dist/
 Ignore build directory
-dummy_data.ts/
+dummy_data.ts
+fill_dummy_data.ts
