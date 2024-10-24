@@ -62,7 +62,9 @@ export async function createEpisode(
   }
 }
 
-/** Edit episode */
+/** 
+ * Edit episode
+ *  */
 export async function editEpisode(req: Request, res: Response) {
   try {
     const { id } = req.params;
