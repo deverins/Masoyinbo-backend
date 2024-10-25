@@ -25,8 +25,8 @@ export const createParticipant = async (req: Request, res: Response) => {
   }
 };
 
-/** Get participants */
-export const getParticipants = async (req: Request, res: Response) => {
+/** Get All participants */
+export const getAllParticipants = async (req: Request, res: Response) => {
   try {
     let status = req.query.status as string
     status = status.toUpperCase()
@@ -44,6 +44,24 @@ export const getParticipants = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error fetching participants', error });
   }
 };
+
+/** Get Participant by ID */
+export const getParticipantById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    // Find the participant by ID
+    const participant = await Participants.findById(id);
+
+    if (!participant) {
+      return res.status(404).json({ message: "Participant not found" });
+    }
+
+    return res.status(200).json({ message: "Participant retrieved successfully", data: participant });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching participant', error });
+  }
+};
+
 /** Get participants Results */
 export const getParticipantResults = async (req: Request, res: Response) => {
   try {
@@ -52,8 +70,8 @@ export const getParticipantResults = async (req: Request, res: Response) => {
       {
         $lookup: {
           from: 'participants',
-          localField: 'participant_id',
-          foreignField: '_id',
+          localField: 'participant_id', 
+          foreignField: '_id', 
           as: 'participantDetails',
         },
       },
@@ -69,9 +87,11 @@ export const getParticipantResults = async (req: Request, res: Response) => {
           episodeNumber: 1,
           episodeLink: 1,
           participantFullName: { $ifNull: ['$participantDetails.fullName', 'Unknown'] },
+          participantId: '$participantDetails._id', 
         },
       },
     ]);
+
     // Send the results back to the client
     res.status(200).json({ participantResultData: results });
   } catch (error) {
@@ -79,6 +99,3 @@ export const getParticipantResults = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'An error occurred while fetching participant results' });
   }
 };
-
-
-

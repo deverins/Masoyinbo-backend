@@ -2,10 +2,11 @@ import express from "express";
 import { getEpisodeEventDetail, getPerformanceStats, createEpisodeEvent, deleteEpisodeEvent, editEpisodeEvent } from "../controllers/episode/episode-events";
 import { ValidatorMDW } from "../validators/authHandler";
 import { createEpisode, deleteEpisode, editEpisode, getAllEpisodes } from "../controllers/episode/episodes";
-import { getParticipantResults, getParticipants } from "../controllers/episode/participants";
+import { getAllParticipants, getParticipantById, getParticipantResults } from "../controllers/episode/participants";
 export const apiRoutes = express.Router();
 
-apiRoutes.get("/get-participants", getParticipants);
+apiRoutes.get("/get-participants", getAllParticipants);
+apiRoutes.get("/get-participant/:id", getParticipantById);
 apiRoutes.get("/get-participants-result", getParticipantResults);
 apiRoutes.post("/episode-events", ValidatorMDW, createEpisodeEvent);
 apiRoutes.put("/episode-events/:id", editEpisodeEvent);
