@@ -24,7 +24,7 @@ export async function createEpisode(
         .json({ message: "Episode already exists for this participant" });
     }
 
-    if (participant.status !== "Pending") {
+    if (participant.status !== "PENDING") {
       return res
         .status(400)
         .json({
@@ -47,7 +47,7 @@ export async function createEpisode(
     await newEpisode.save();
 
     /** Update participant's status to 'Completed' */
-    participant.status = "Completed";
+    participant.status = "COMPLETED";
     await participant.save();
 
     return res
@@ -62,13 +62,10 @@ export async function createEpisode(
   }
 }
 
-/** 
- * Edit episode
- *  */
+/** * Edit episode  */
 export async function editEpisode(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    console.log("Id", id)
     const updatedData = req.body;
 
     if (!updatedData) {
