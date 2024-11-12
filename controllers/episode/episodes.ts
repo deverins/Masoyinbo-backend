@@ -110,13 +110,32 @@ export async function deleteEpisode(req: Request, res: Response) {
   }
 }
 
-/** Get all episodes */
+/** Get all episodes with pagination */
 export async function getAllEpisodes(req: Request, res: Response) {
   try {
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 8;
+    const skip = (page - 1) * limit;
+
+    // Fetch episodes, sorted by episodeDate with the latest first
     const episodes = await EpisodeModel.find()
-      .sort({ episodeDate: -1 });
-    return res.status(200).json(episodes);
+      .sort({ episodeNumber: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select('episodeLink episodeNumber');
+
+    // Get the total number of episodes for pagination
+    const totalEpisodesCount = await EpisodeModel.countDocuments();
+
+    // Send paginated response with metadata
+    return res.status(200).json({
+      episodes,
+      currentPage: page,
+      totalPages: Math.ceil(totalEpisodesCount / limit),
+      totalEpisodesCount,
+    });
   } catch (error: any) {
+    console.error("Error fetching episodes:", error);
     return res.status(500).json({ message: "Error fetching episodes", error: error.message });
   }
 }

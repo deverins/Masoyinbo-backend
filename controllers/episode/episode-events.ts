@@ -152,10 +152,10 @@ export async function getPerformanceStats(req: Request, res: Response) {
   try {
     // Fetch recent episodes, sorted by date
     const recentEpisodes = await EpisodeModel.find({})
-      .sort({ episodeDate: -1 })
+      .sort({ episodeNumber: -1 })
       .limit(8)
-      .select('episodeLink')
-      .select('episodeNumber');
+      .select('episodeLink episodeNumber');
+
 
     // Fetch participants with 'Pending' status for the request pool
     const totalWaitingParticipants = await Participants.countDocuments({ status: 'PENDING' });
