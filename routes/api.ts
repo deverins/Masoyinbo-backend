@@ -1,8 +1,8 @@
 import express from "express";
-import { getEpisodeEventDetail, getPerformanceStats, createEpisodeEvent, deleteEpisodeEvent, editEpisodeEvent } from "../controllers/episode/episode-events";
+import { getEpisodeEventDetail, getPerformanceStats, createEpisodeEvent, deleteEpisodeEvent, editEpisodeEvent } from "../controllers/episode-events";
 import { ValidatorMDW } from "../validators/authHandler";
-import { createEpisode, deleteEpisode, editEpisode, getAllEpisodes } from "../controllers/episode/episodes";
-import { getAllParticipants, getParticipantById, getParticipantResults } from "../controllers/episode/participants";
+import { createEpisode, deleteEpisode, editEpisode, getAllEpisodes } from "../controllers/episodes";
+import { getAllParticipants, getParticipantById, getParticipantResults } from "../controllers/participants";
 export const apiRoutes = express.Router();
 
 apiRoutes.get("/get-participants", getAllParticipants);

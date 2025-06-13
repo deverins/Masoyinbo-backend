@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { EpisodeModel } from "../../models/episode";
-import { Participants } from "../../models/participants";
+import { EpisodeModel } from "../models/episode";
+import { Participants } from "../models/participants";
 
 /** Create a new episode */
 export async function createEpisode(

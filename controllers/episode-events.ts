@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { EpisodeModel } from "../../models/episode";
-import { EpisodeEventsModel } from "../../models/episodeEvents";
-import { Participants } from '../../models/participants';
+import { EpisodeModel } from "../models/episode";
+import { EpisodeEventsModel } from "../models/episodeEvents";
+import { Participants } from '../models/participants';
 import mongoose from 'mongoose';
-import { UserModel } from '../../models/user';
+import { UserModel } from '../models/user';
 
 
 export async function getEpisodeEventDetail(req: Request, res: Response) {
@@ -115,9 +115,23 @@ export const editEpisodeEvent = async (req: Request, res: Response) => {
 
     const { question, correctAnswer, isCorrect, response, type, amount, balance } = event;
 
+    let updateOperation;
+    if (type === 'CODE_MIX') {
+      // For CODE_MIX type, remove question and correctAnswer fields
+      updateOperation = {
+        $set: { response, isCorrect, type, amount, balance },
+        $unset: { question: "", correctAnswer: "" }
+      };
+    } else {
+      // For other types, update all fields
+      updateOperation = {
+        $set: { question, correctAnswer, response, isCorrect, type, amount, balance }
+      };
+    }
+
     const updatedEvent = await EpisodeEventsModel.findByIdAndUpdate(
       id,
-      { question, correctAnswer, response, isCorrect, type, amount, balance },
+      updateOperation,
       { new: true, runValidators: true }
     );
 
@@ -131,6 +145,7 @@ export const editEpisodeEvent = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Error updating Episode Event', error: error.message });
   }
 };
+
 export const deleteEpisodeEvent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
